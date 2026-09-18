@@ -1,4 +1,3 @@
-import { Announcement } from "@/components/Announcement";
 import { Navbar } from "@/components/Navbar";
 import { Features } from "@/components/sections/Features";
 import { Footer } from "@/components/sections/Footer";
@@ -15,7 +14,6 @@ const Page = () => {
       >
         Газрын зураг руу шилжих
       </a>
-      <Announcement />
       <Navbar />
       <main>
         <Hero />

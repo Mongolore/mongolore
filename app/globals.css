@@ -75,6 +75,21 @@ body::after {
   text-orientation: sideways;
 }
 
+/* ---- Neighbouring countries ---- */
+.neighbour {
+  fill: #101b33;
+  stroke: rgb(140 198 239 / 0.18);
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+  transition: fill 300ms ease, stroke 300ms ease;
+}
+
+.neighbour[data-active="true"] {
+  fill: #1d2c4c;
+  stroke: rgb(232 176 75 / 0.5);
+  stroke-width: 0.9;
+}
+
 /* ---- Map regions ---- */
 .region {
   fill: #253c69;
@@ -84,6 +99,11 @@ body::after {
   cursor: pointer;
   outline: none;
   transition: fill 180ms ease, stroke 180ms ease;
+}
+
+/* Regions tied to the era selected on the timeline */
+.region[data-era="true"] {
+  fill: #2b5a80;
 }
 
 .region[data-active="true"] {

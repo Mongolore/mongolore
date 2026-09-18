@@ -9,13 +9,7 @@ export const NAV_LINKS = [
   { href: "#features", label: "Боломжууд" },
 ] as const;
 
-export const ANNOUNCEMENT = {
-  text: "Бид одоогоор бета хувилбар дээр ажиллаж байна.",
-  link: { label: "Юу хийж байгааг харах", href: "#features" },
-};
-
 export const HERO = {
-  badge: "СТАРТАП ТӨСӨЛ",
   subtitle:
     "Одоо үеийн залууст зориулсан Монголын интерактив түүхэн газрын зургийн веб платформ",
   primaryCta: { label: "Газрын зураг үзэх", href: "#map" },
@@ -31,34 +25,27 @@ export const MAP_PANEL = {
   coordinates: "46°52′ х.ө. · 103°51′ з.у.",
   hint: "Аймаг дээр дарж эсвэл Tab товчоор сонгоно уу",
   legend: {
-    pin: "Түүхэн газар",
+    era: "Тухайн үеийн голомт",
+    site: "Түүхэн газар",
     selected: "Сонгосон аймаг",
   },
   scaleLabel: "400 км",
   northLabel: "Х",
 };
 
-/** Era ruler under the map — a preview of the timeline feature. */
-export const ERA_RULER = {
-  title: "Цаг хугацааны шугам",
-  featureId: "timeline",
-  eras: [
-    { year: "МЭӨ 209", label: "Хүннү гүрэн" },
-    { year: "1206", label: "Их Монгол Улс" },
-    { year: "1368", label: "Умард Юань" },
-    { year: "1691", label: "Чин улсын үе" },
-    { year: "1911", label: "Тусгаар тогтнол" },
-    { year: "1921", label: "Ардын хувьсгал" },
-    { year: "1990", label: "Ардчилал" },
-    { year: "Өнөө", label: "Орчин үе" },
-  ],
+export const TIMELINE = {
+  label: "Цаг хугацааны шугам",
+  /** Screen-reader description for the draggable handle. */
+  handleLabel: "Түүхэн үеийг сонгох",
+  hint: "Сумыг чирж үеэ солино уу",
+  previous: "Өмнөх үе",
+  next: "Дараагийн үе",
 };
 
 export const TEAM_SECTION = {
   title: "Бид хэн бэ?",
   intro:
     "Бид Монголын өсвөр насныханд түүхийг сонирхолтой, ойлгомжтой болгохыг зорьсон 5 гишүүнтэй баг.",
-  note: "Түүх бол цээжлэх он дараалал биш — хаана, яагаад болсныг ойлгох үед л сонирхолтой болдог гэдэгт бид итгэдэг.",
   rosterLabel: "Багийн гишүүд",
 };
 
@@ -86,14 +73,11 @@ export const WHAT_WE_DO = {
 
 export const FEATURES_SECTION = {
   title: "Боломжууд",
-  intro:
-    "Платформоо алхам алхмаар бүтээж байна. Боломж бүр бэлэн болмогц энд тэмдэглэгдэнэ.",
   availableLabel: "Ашиглах боломжтой",
   soonLabel: "Удахгүй",
 };
 
 export const FOOTER = {
-  tagline: "Монголын түүх — газрын зураг дээр. Өсвөр насныханд зориулав.",
   teamLabel: "Баг",
   navLabel: "Хэсгүүд",
   backToTop: "Дээш буцах",

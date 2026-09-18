@@ -22,16 +22,3 @@ export function OrnamentBand({ className = "" }: { className?: string }) {
     </svg>
   );
 }
-
-/** A small four-petal өлзий-style mark used as a divider. */
-export function OrnamentMark({ className = "" }: { className?: string }) {
-  return (
-    <svg aria-hidden viewBox="0 0 24 24" className={className}>
-      <g fill="none" stroke="currentColor" strokeWidth="1.2">
-        <rect x="8" y="8" width="8" height="8" transform="rotate(45 12 12)" />
-        <path d="M12 1v5M12 18v5M1 12h5M18 12h5" />
-        <circle cx="12" cy="12" r="1.4" fill="currentColor" />
-      </g>
-    </svg>
-  );
-}

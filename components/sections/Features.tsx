@@ -41,23 +41,12 @@ function FeatureCard({ feature }: { feature: Feature }) {
 export function Features() {
   // Stable sort: shipped features first, original order otherwise.
   const features = [...FEATURES].sort((a, b) => Number(b.implemented) - Number(a.implemented));
-  const readyCount = features.filter((f) => f.implemented).length;
 
   return (
     <section aria-labelledby="features-title" id="features" className="scroll-mt-20 py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <Reveal className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-          <SectionHeading id="features-title" title={FEATURES_SECTION.title}>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
-              {FEATURES_SECTION.intro}
-            </p>
-          </SectionHeading>
-          <p className="shrink-0 font-serif text-muted">
-            <span className="text-4xl font-semibold text-ink tabular-nums">{readyCount}</span>
-            <span className="mx-1 text-2xl">/</span>
-            <span className="text-2xl tabular-nums">{features.length}</span>
-            <span className="ml-2 font-sans text-sm">{FEATURES_SECTION.availableLabel.toLowerCase()}</span>
-          </p>
+        <Reveal>
+          <SectionHeading id="features-title" title={FEATURES_SECTION.title} />
         </Reveal>
 
         <ul className="mt-14 grid gap-3 md:grid-cols-2">

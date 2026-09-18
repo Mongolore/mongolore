@@ -13,7 +13,6 @@ export function Footer() {
           <a href="#top" className="text-2xl text-ink">
             <Logo />
           </a>
-          <p className="mt-5 max-w-xs leading-relaxed text-muted">{FOOTER.tagline}</p>
         </div>
 
         <div>

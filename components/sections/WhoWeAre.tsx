@@ -1,7 +1,6 @@
 import { GraduationCap } from "lucide-react";
 import { TEAM_SECTION } from "@/data/site";
 import { TEAM } from "@/data/team";
-import { OrnamentMark } from "../Ornament";
 import { TeamAvatar } from "./TeamAvatar";
 import { Reveal } from "../Reveal";
 import { SectionHeading } from "./SectionHeading";
@@ -17,18 +16,12 @@ const AVATAR_TONES = [
 export function WhoWeAre() {
   return (
     <section aria-labelledby="team-title" id="team" className="scroll-mt-20 py-24 sm:py-32">
-      <div className="mx-auto grid max-w-7xl gap-14 px-5 sm:px-8 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:gap-20">
+      <div className="mx-auto grid max-w-7xl gap-14 px-5 sm:px-8 lg:grid-cols-[minmax(0,6fr)_minmax(0,5fr)] lg:items-center lg:gap-20">
         <Reveal>
           <SectionHeading id="team-title" title={TEAM_SECTION.title}>
             <p className="mt-7 max-w-xl text-xl leading-relaxed text-ink/90 sm:text-2xl">
               {TEAM_SECTION.intro}
             </p>
-            <div className="mt-10 flex max-w-lg gap-4">
-              <OrnamentMark className="mt-1 size-5 shrink-0 text-gold" />
-              <p className="font-serif text-lg leading-relaxed text-muted italic">
-                {TEAM_SECTION.note}
-              </p>
-            </div>
           </SectionHeading>
         </Reveal>
 

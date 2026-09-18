@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ТҮҮХ MAP
 
-## Getting Started
+Монголын түүхийг интерактив газрын зургаар үзүүлэх веб платформын нүүр хуудас.
+Next.js (App Router), TypeScript, Tailwind CSS дээр бүтээв.
 
-First, run the development server:
+## Ажиллуулах
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev     # http://localhost:3000
+npm run build   # production build
+npm run lint
+npm run check:data   # контентын өгөгдлийг шалгана
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Контент засварлах
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Бүх агуулга `data/` доторх файлуудад байдаг — компонент дотор бичигдээгүй.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Файл | Юуг агуулах |
+| --- | --- |
+| `data/site.ts` | Хуудасны бичвэр, цэсний холбоосууд |
+| `data/team.ts` | Багийн гишүүд: нэр, үүрэг, сургууль, зураг |
+| `data/features.ts` | Боломжуудын жагсаалт (`implemented: true` болгоход "Ашиглах боломжтой" болно) |
+| `data/eras.ts` | Цаг хугацааны шугамын үеүүд, тэдгээрийн түүхэн газрууд |
+| `data/aimags.ts` | 22 бүсийн монгол нэр (ISO кодоор) |
+| `data/aimagInfo.ts` | Аймаг дээр дарахад гарах мэдээлэл |
+| `data/neighbours.ts` | Хөрш орнуудын нэр, шошгоны байрлал |
 
-## Learn More
+Засварласны дараа `npm run check:data` ажиллуулж, алдаагүйг шалгана.
 
-To learn more about Next.js, take a look at the following resources:
+## Газрын зургийн өгөгдөл
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`public/data/` доторх GeoJSON файлууд:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `mongolia-aimags.geojson` — 21 аймаг + Улаанбаатар ([geoBoundaries](https://www.geoboundaries.org/), gbOpen MNG ADM1)
+- `mongolia-outline.geojson` — улсын хил (аймгуудаас нэгтгэсэн)
+- `neighbours.geojson` — хөрш орнууд ([Natural Earth](https://www.naturalearthdata.com/), 110m)
 
-## Deploy on Vercel
+Шинэ файл татсан бол дараах командыг ажиллуулна. Энэ нь d3-geo-д
+тохируулан цагираг эргүүлж, 22 бүс бүрийн нэрийг шалгана:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm run map:prepare
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Багийн зураг
+
+`public/team/` дотор `<нэр>.jpg` нэртэйгээр хадгална. Дөрвөлжин зураг
+хэрэгтэй бол `node scripts/prepare-team-photos.mjs` ашиглана
+(эх зургууд `~/Downloads` дотор байх ёстой). Зураг байхгүй гишүүн
+нэрийн эхний үсгээр харагдана.
