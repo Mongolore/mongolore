@@ -13,7 +13,11 @@ import {
   type PointerEvent,
 } from "react";
 import { REGIONS, REGION_KIND_LABEL, type Region } from "@/data/aimags";
-import { AIMAG_EVENTS, AIMAG_INFO_PLACEHOLDER } from "@/data/aimagInfo";
+import {
+  AIMAG_EVENTS,
+  AIMAG_INFO_PLACEHOLDER,
+  MAP_HISTORICAL_DATA,
+} from "@/data/aimagInfo";
 import { ERAS } from "@/data/eras";
 import { NEIGHBOURS, type NeighbourCode } from "@/data/neighbours";
 import { MAP_PANEL } from "@/data/site";
@@ -234,6 +238,11 @@ export function HistoryMap() {
   );
   const selectedRegion = selected ? byIso.get(selected) : undefined;
   const events = selected ? AIMAG_EVENTS[selected] ?? [] : [];
+  // Era-specific history for the selected aimag: MAP_HISTORICAL_DATA[dataKey][numericId].
+  // Updates live when the timeline moves while an aimag stays selected.
+  const eraHistory = selectedRegion?.numericId
+    ? MAP_HISTORICAL_DATA[era.dataKey]?.[selectedRegion.numericId]
+    : undefined;
 
   const regionDetails = selectedRegion && (
     <>
@@ -255,6 +264,14 @@ export function HistoryMap() {
           <X className="size-4" aria-hidden />
         </button>
       </div>
+      {eraHistory && (
+        <div className="mt-3 border-l-2 border-gold pl-3">
+          <p className="text-xs font-medium text-gold-soft">
+            {era.name} · {era.period}
+          </p>
+          <p className="mt-1 text-sm leading-relaxed text-muted">{eraHistory}</p>
+        </div>
+      )}
       {events.length > 0 ? (
         <ul className="mt-3 space-y-3">
           {events.map((event) => (
@@ -266,7 +283,9 @@ export function HistoryMap() {
           ))}
         </ul>
       ) : (
-        <p className="mt-2 text-sm leading-relaxed text-muted">{AIMAG_INFO_PLACEHOLDER}</p>
+        !eraHistory && (
+          <p className="mt-2 text-sm leading-relaxed text-muted">{AIMAG_INFO_PLACEHOLDER}</p>
+        )
       )}
     </>
   );

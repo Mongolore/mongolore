@@ -10,7 +10,7 @@
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { REGIONS } from "../data/aimags.ts";
-import { AIMAG_EVENTS } from "../data/aimagInfo.ts";
+import { AIMAG_EVENTS, MAP_HISTORICAL_DATA } from "../data/aimagInfo.ts";
 import { ERAS } from "../data/eras.ts";
 import { FEATURES } from "../data/features.ts";
 import { NEIGHBOURS } from "../data/neighbours.ts";
@@ -47,6 +47,41 @@ for (const era of ERAS) {
     check(
       !site.country || site.country in NEIGHBOURS,
       `eras: "${site.name}" references unknown country "${site.country}"`,
+    );
+  }
+}
+
+/** Region numeric ids used as inner keys of `MAP_HISTORICAL_DATA`. */
+const numericIds = new Set(
+  Object.values(REGIONS)
+    .map((region) => region.numericId)
+    .filter((id): id is string => typeof id === "string"),
+);
+
+const dataKeys = new Set<string>();
+for (const [dataKey, entries] of Object.entries(MAP_HISTORICAL_DATA)) {
+  dataKeys.add(dataKey);
+  for (const numericId of Object.keys(entries)) {
+    check(
+      numericIds.has(numericId),
+      `MAP_HISTORICAL_DATA["${dataKey}"]: unknown aimag id "${numericId}"`,
+    );
+    check(
+      entries[numericId].trim().length > 0,
+      `MAP_HISTORICAL_DATA["${dataKey}"]: empty entry for "${numericId}"`,
+    );
+  }
+}
+
+for (const era of ERAS) {
+  check(
+    typeof era.dataKey === "string" && era.dataKey.length > 0,
+    `eras: "${era.id}" is missing a dataKey`,
+  );
+  if (typeof era.dataKey === "string" && era.dataKey.length > 0) {
+    check(
+      dataKeys.has(era.dataKey),
+      `eras: "${era.id}" dataKey "${era.dataKey}" has no block in MAP_HISTORICAL_DATA`,
     );
   }
 }

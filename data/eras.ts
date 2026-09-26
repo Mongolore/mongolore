@@ -11,6 +11,9 @@ import type { NeighbourCode } from "./neighbours";
  * - `sites.country`: set when a site lies outside Mongolia, so the map can
  *   highlight the neighbouring country instead.
  * - Eras are shown in array order; keep them chronological.
+ * - `dataKey`: key of the era's block in `MAP_HISTORICAL_DATA`
+ *   (data/aimagInfo.ts), used to show per-aimag history when a region is
+ *   clicked. Every era must have one; `npm run check:data` enforces it.
  */
 export type EraSite = {
   name: string;
@@ -23,6 +26,8 @@ export type Era = {
   name: string;
   /** Shown on the timeline tick and next to the era name. */
   period: string;
+  /** Key of this era's per-aimag entries in `MAP_HISTORICAL_DATA`. */
+  dataKey: string;
   summary: string;
   regions: string[];
   sites: EraSite[];
@@ -33,6 +38,7 @@ export const ERAS: Era[] = [
     id: "khunnu",
     name: "Хүннү гүрэн",
     period: "МЭӨ 209",
+    dataKey: "209_93",
     summary:
       "Модун шаньюй овог аймгуудыг нэгтгэж, Төв Азид нүүдэлчдийн анхны эзэнт гүрнийг байгуулав.",
     regions: ["MN-047", "MN-073", "MN-049"],
@@ -45,6 +51,7 @@ export const ERAS: Era[] = [
     id: "turk",
     name: "Түрэгийн хаант улс",
     period: "552–745",
+    dataKey: "552_745",
     summary:
       "Орхоны хөндий төв нь болж, Күлтегин, Билгэ хааны гэрэлт хөшөөнд эртний түрэг бичгээр түүхээ үлдээжээ.",
     regions: ["MN-073", "MN-055"],
@@ -54,6 +61,7 @@ export const ERAS: Era[] = [
     id: "uighur",
     name: "Уйгурын хаант улс",
     period: "744–840",
+    dataKey: "744_840",
     summary: "Орхон голын хөндийд Хар балгас хотоо нийслэлээ болгов.",
     regions: ["MN-073"],
     sites: [{ name: "Хар балгас", coordinates: [102.65, 47.43] }],
@@ -62,6 +70,7 @@ export const ERAS: Era[] = [
     id: "great-mongol",
     name: "Их Монгол Улс",
     period: "1206–1368",
+    dataKey: "1206_1368",
     summary:
       "Их хуралдайгаар Тэмүүжинг Чингис хаанаар өргөмжилж, улмаар Хархорум нийслэл болов.",
     regions: ["MN-039", "MN-055", "MN-047"],
@@ -74,6 +83,7 @@ export const ERAS: Era[] = [
     id: "northern-yuan",
     name: "Умард Юань",
     period: "1368–1691",
+    dataKey: "1368_1691",
     summary:
       "Монголчууд эх нутагтаа буцаж, Даян хаан улсаа сэргээв. Абтай сайн хан Эрдэнэ зуу хийдийг байгуулав.",
     regions: ["MN-055", "MN-047"],
@@ -83,6 +93,7 @@ export const ERAS: Era[] = [
     id: "qing",
     name: "Чин улсын үе",
     period: "1691–1911",
+    dataKey: "1691_1911",
     summary:
       "Долоон нуурын чуулганаар Халхын ноёд Чин улсад орж, хожим Амарбаясгалант хийд баригдав.",
     regions: ["MN-049", "MN-047"],
@@ -95,6 +106,7 @@ export const ERAS: Era[] = [
     id: "independence",
     name: "Үндэсний эрх чөлөө",
     period: "1911–1921",
+    dataKey: "1911_1921",
     summary:
       "Монгол улс тусгаар тогтнолоо зарлаж, VIII Богд Жавзандамба хутагтыг хаанаар өргөмжлөв.",
     regions: ["MN-1", "MN-047"],
@@ -104,6 +116,7 @@ export const ERAS: Era[] = [
     id: "people-republic",
     name: "Ардын хувьсгал",
     period: "1921–1990",
+    dataKey: "1921_1990",
     summary:
       "Ардын хувьсгал ялж, Бүгд Найрамдах Монгол Ард Улс тунхаглагдав. 1939 онд Халхын голын дайн болов.",
     regions: ["MN-061", "MN-1"],
@@ -116,6 +129,7 @@ export const ERAS: Era[] = [
     id: "democracy",
     name: "Ардчилал",
     period: "1990–өнөө",
+    dataKey: "1990_present",
     summary:
       "Ардчилсан хувьсгал өрнөж, 1992 онд шинэ Үндсэн хууль батлагдан олон намын тогтолцоо тогтов.",
     regions: ["MN-1"],
