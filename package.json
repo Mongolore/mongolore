@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "map:prepare": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/prepare-map-data.mts",
-    "check:data": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/validate-data.mts"
+    "check:data": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/validate-data.mts",
+    "map:history": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/prepare-history-maps.mts"
   },
   "dependencies": {
     "d3-geo": "^3.1.1",

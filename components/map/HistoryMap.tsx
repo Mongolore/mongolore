@@ -2,7 +2,8 @@
 
 import { geoGraticule, geoMercator, geoPath, type GeoPermissibleObjects } from "d3-geo";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
+import Link from "next/link";
 import {
   useCallback,
   useEffect,
@@ -20,7 +21,7 @@ import {
 } from "@/data/aimagInfo";
 import { ERAS } from "@/data/eras";
 import { NEIGHBOURS, type NeighbourCode } from "@/data/neighbours";
-import { MAP_PANEL } from "@/data/site";
+import { FULL_MAP, MAP_PANEL } from "@/data/site";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import { EraTimeline } from "./EraTimeline";
 
@@ -528,6 +529,13 @@ export function HistoryMap() {
               </li>
             ))}
           </ul>
+          <Link
+            href={`/map?era=${era.id}`}
+            className="group mt-4 inline-flex items-center gap-1.5 rounded text-sm font-medium text-gold transition-colors hover:text-gold-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-accent"
+          >
+            {FULL_MAP.openFull}
+            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+          </Link>
         </div>
 
         <div className="bg-navy-950/80 px-4 py-4 sm:px-5">

@@ -14,6 +14,9 @@ import type { NeighbourCode } from "./neighbours";
  * - `dataKey`: key of the era's block in `MAP_HISTORICAL_DATA`
  *   (data/aimagInfo.ts), used to show per-aimag history when a region is
  *   clicked. Every era must have one; `npm run check:data` enforces it.
+ * - Each era also needs an entry in `ERA_MAPS` (data/historyMaps.ts, the
+ *   borders drawn for it) and `ERA_DETAILS` (data/eraDetails.ts, the text
+ *   under the full map).
  */
 export type EraSite = {
   name: string;
@@ -77,6 +80,7 @@ export const ERAS: Era[] = [
     sites: [
       { name: "Хөдөө арал", coordinates: [109.45, 47.18] },
       { name: "Хархорум", coordinates: [102.84, 47.2] },
+      { name: "Хаанбалиг (Даду)", coordinates: [116.39, 39.91], country: "CHN" },
     ],
   },
   {
@@ -87,7 +91,10 @@ export const ERAS: Era[] = [
     summary:
       "Монголчууд эх нутагтаа буцаж, Даян хаан улсаа сэргээв. Абтай сайн хан Эрдэнэ зуу хийдийг байгуулав.",
     regions: ["MN-055", "MN-047"],
-    sites: [{ name: "Эрдэнэ зуу", coordinates: [102.845, 47.2] }],
+    sites: [
+      { name: "Эрдэнэ зуу", coordinates: [102.845, 47.2] },
+      { name: "Хөх хот", coordinates: [111.67, 40.82], country: "CHN" },
+    ],
   },
   {
     id: "qing",
@@ -100,6 +107,8 @@ export const ERAS: Era[] = [
     sites: [
       { name: "Амарбаясгалант", coordinates: [105.08, 49.48] },
       { name: "Долоон нуур", coordinates: [116.49, 42.25], country: "CHN" },
+      { name: "Ховд", coordinates: [91.64, 48.01] },
+      { name: "Хиагт", coordinates: [106.47, 50.33] },
     ],
   },
   {
@@ -110,7 +119,11 @@ export const ERAS: Era[] = [
     summary:
       "Монгол улс тусгаар тогтнолоо зарлаж, VIII Богд Жавзандамба хутагтыг хаанаар өргөмжлөв.",
     regions: ["MN-1", "MN-047"],
-    sites: [{ name: "Нийслэл Хүрээ", coordinates: [106.92, 47.92] }],
+    sites: [
+      { name: "Нийслэл Хүрээ", coordinates: [106.92, 47.92] },
+      { name: "Ховд", coordinates: [91.64, 48.01] },
+      { name: "Хиагт", coordinates: [106.47, 50.33] },
+    ],
   },
   {
     id: "people-republic",

@@ -4,15 +4,19 @@
  *   npm run check:data
  *
  * Catches the mistakes that are easy to make when editing content by hand:
- * unknown aimag codes, coordinates outside the map, duplicate ids and missing
- * team photos.
+ * unknown aimag codes, coordinates outside the map, duplicate ids, eras
+ * without a historical map, details or story, story cards over the word
+ * limit, and missing team photos.
  */
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { REGIONS } from "../data/aimags.ts";
 import { AIMAG_EVENTS, MAP_HISTORICAL_DATA } from "../data/aimagInfo.ts";
+import { ERA_DETAILS } from "../data/eraDetails.ts";
 import { ERAS } from "../data/eras.ts";
+import { ERA_STORIES } from "../data/eraStories.ts";
 import { FEATURES } from "../data/features.ts";
+import { ERA_MAPS } from "../data/historyMaps.ts";
 import { NEIGHBOURS } from "../data/neighbours.ts";
 import { TEAM } from "../data/team.ts";
 
@@ -84,6 +88,95 @@ for (const era of ERAS) {
       `eras: "${era.id}" dataKey "${era.dataKey}" has no block in MAP_HISTORICAL_DATA`,
     );
   }
+}
+
+for (const era of ERAS) {
+  const map = ERA_MAPS[era.id];
+  check(!!map, `historyMaps: no ERA_MAPS entry for era "${era.id}"`);
+  if (map) {
+    const file = fileURLToPath(new URL(`../public/data/history/${era.id}.geojson`, import.meta.url));
+    check(existsSync(file), `historyMaps: public/data/history/${era.id}.geojson missing, run npm run map:history`);
+    const { west, south, east, north } = map.view;
+    const inView = ([lon, lat]: [number, number]) => lon >= west && lon <= east && lat >= south && lat <= north;
+    for (const site of era.sites) {
+      check(inView(site.coordinates), `eras: "${site.name}" is outside the "${era.id}" map view`);
+    }
+    const placeNames = new Set<string>();
+    for (const place of map.places) {
+      check(inView(place.at), `historyMaps: place "${place.name}" is outside the "${era.id}" map view`);
+      check(place.modern.trim().length > 0, `historyMaps: place "${place.name}" (${era.id}) has no modern location`);
+      check(!placeNames.has(place.name), `historyMaps: duplicate place "${place.name}" in "${era.id}"`);
+      placeNames.add(place.name);
+    }
+    for (const route of map.routes ?? []) {
+      check(route.path.length >= 2, `historyMaps: route "${route.label}" (${era.id}) needs at least two points`);
+      check(
+        route.path.some(inView),
+        `historyMaps: route "${route.label}" never enters the "${era.id}" map view`,
+      );
+      for (const [lon, lat] of route.path) {
+        check(Math.abs(lon) <= 180 && Math.abs(lat) <= 90, `historyMaps: route "${route.label}" has a bad point [${lon}, ${lat}]`);
+      }
+    }
+  }
+
+  const detail = ERA_DETAILS[era.id];
+  check(!!detail, `eraDetails: no ERA_DETAILS entry for era "${era.id}"`);
+  if (detail) {
+    check(detail.events.length > 0, `eraDetails: "${era.id}" has no events`);
+    for (const field of ["governance", "capital", "territory", "military", "trade"] as const) {
+      check(detail[field].trim().length > 0, `eraDetails: "${era.id}" has an empty ${field}`);
+    }
+    for (const side of ["north", "south", "east", "west"] as const) {
+      check(detail.frontiers[side].trim().length > 0, `eraDetails: "${era.id}" has no ${side} frontier`);
+    }
+    check(detail.figures.length > 0, `eraDetails: "${era.id}" has no figures`);
+  }
+}
+const HOTSPOT_KINDS = ["capital", "turning", "route", "secret"] as const;
+const HOTSPOT_MAX_WORDS = 80;
+for (const era of ERAS) {
+  const story = ERA_STORIES[era.id];
+  check(!!story, `eraStories: no ERA_STORIES entry for era "${era.id}"`);
+  const map = ERA_MAPS[era.id];
+  if (!story || !map) continue;
+  const where = `eraStories "${era.id}"`;
+  check(!!story.hook.title.trim() && !!story.hook.summary.trim(), `${where}: empty hook`);
+  for (const fact of ["leaders", "size", "goal"] as const) {
+    check(story.facts[fact].trim().length > 0, `${where}: empty fact "${fact}"`);
+  }
+  check(story.hotspots.length >= 4 && story.hotspots.length <= 6, `${where}: needs 4–6 hotspots`);
+  for (const kind of HOTSPOT_KINDS) {
+    check(story.hotspots.some((h) => h.kind === kind), `${where}: no "${kind}" hotspot`);
+  }
+  const { west, south, east, north } = map.view;
+  for (const hotspot of story.hotspots) {
+    const words = hotspot.text.trim().split(/\s+/).length;
+    check(words <= HOTSPOT_MAX_WORDS, `${where}: "${hotspot.title}" is ${words} words (max ${HOTSPOT_MAX_WORDS})`);
+    check(!!hotspot.place !== !!hotspot.at, `${where}: "${hotspot.title}" needs exactly one of place or at`);
+    if (hotspot.place) {
+      check(
+        map.places.some((p) => p.name === hotspot.place),
+        `${where}: "${hotspot.title}" points at unknown place "${hotspot.place}"`,
+      );
+    }
+    if (hotspot.at) {
+      const [lon, lat] = hotspot.at;
+      check(
+        lon >= west && lon <= east && lat >= south && lat <= north,
+        `${where}: "${hotspot.title}" is outside the map view`,
+      );
+    }
+  }
+  check(story.thenNow.length >= 2 && story.thenNow.length <= 3, `${where}: needs 2–3 then-vs-now bullets`);
+  const { options, answer } = story.quiz;
+  check(options.length >= 3, `${where}: quiz needs at least three options`);
+  check(Number.isInteger(answer) && answer >= 0 && answer < options.length, `${where}: quiz answer out of range`);
+  check(new Set(options).size === options.length, `${where}: duplicate quiz options`);
+}
+
+for (const id of [...Object.keys(ERA_MAPS), ...Object.keys(ERA_DETAILS), ...Object.keys(ERA_STORIES)]) {
+  check(eraIds.has(id), `historyMaps/eraDetails/eraStories: "${id}" is not an era id`);
 }
 
 const featureIds = new Set<string>();

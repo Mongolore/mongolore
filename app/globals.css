@@ -158,3 +158,66 @@ body::after {
   .animate-pin-pulse { animation: none; opacity: 0; }
   .region-lift { transform: none; }
 }
+
+/* ---- Full historical map (/map) ---- */
+.polity {
+  stroke-linejoin: round;
+  transition: fill 300ms ease, stroke 300ms ease;
+}
+
+.polity[data-role="land"] { fill: #17223d; stroke: rgb(140 198 239 / 0.12); stroke-width: 0.5; }
+.polity[data-role="other"] { fill: #1f2d50; stroke: rgb(140 198 239 / 0.38); stroke-width: 0.7; }
+.polity[data-role="ruler"] { fill: #342a4c; stroke: rgb(196 160 232 / 0.6); stroke-width: 0.9; }
+.polity[data-role="ally"] { fill: url(#ally-hatch); stroke: rgb(232 176 75 / 0.6); stroke-width: 0.7; stroke-dasharray: 3 2; }
+.polity[data-role="realm"] { fill: #4d3b1d; stroke: var(--color-gold); stroke-width: 1.2; }
+
+.era-fade { animation: fade-in 0.45s ease-out; }
+
+.route {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke-width 150ms ease;
+}
+
+.route-trade { stroke: #f3cd82; stroke-width: 1.5; stroke-dasharray: 6 4; }
+.route-yam { stroke: #e8b04b; stroke-width: 2.4; stroke-dasharray: 0.1 5; }
+.route-campaign { stroke: #e0654f; stroke-width: 1.8; }
+.route-migration { stroke: #8cc6ef; stroke-width: 1.5; stroke-dasharray: 8 3 2 3; }
+.route-journey { stroke: #c4a0e8; stroke-width: 1.4; stroke-dasharray: 2 4; }
+.route[data-active="true"] { stroke-width: 3.2; }
+
+.route-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;
+  pointer-events: stroke;
+}
+
+.place { cursor: default; outline: none; }
+.place:focus-visible { outline: 2px solid var(--color-sky-accent); outline-offset: 3px; }
+
+.polity-label { font-family: var(--font-serif); }
+.polity-label-realm { fill: var(--color-gold-soft); font-size: 14px; font-weight: 700; letter-spacing: 0.14em; }
+.polity-label-ruler { fill: #d6c1f0; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; }
+.polity-label-ally { fill: #e9cf98; font-size: 11.5px; font-weight: 600; }
+.polity-label-other { fill: var(--color-muted); font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; }
+.place-label { fill: var(--color-ink); font-size: 11.5px; font-weight: 600; }
+.place-label-capital, .place-label-ordo { fill: var(--color-gold-soft); }
+.place-label-battle { fill: #f2a193; }
+.region-label { fill: var(--color-faint); font-family: var(--font-serif); font-size: 11px; font-style: italic; letter-spacing: 0.06em; }
+.river-label { fill: #7fb8e6; font-size: 10px; font-style: italic; }
+.landform-label { fill: rgb(169 180 201 / 0.55); font-size: 10.5px; font-style: italic; letter-spacing: 0.18em; }
+.landform-desert { fill: rgb(243 205 130 / 0.45); }
+.landform-lake { fill: #7fb8e6; letter-spacing: 0.06em; }
+
+@media (prefers-reduced-motion: reduce) {
+  .era-fade { animation: none; }
+}
+
+/* Story hotspots on /map */
+.hotspot { cursor: pointer; outline: none; }
+.hotspot-disc { fill: var(--color-gold); stroke: var(--color-navy-950); stroke-width: 1.5; transition: fill 150ms ease; }
+.hotspot:hover .hotspot-disc, .hotspot[data-active="true"] .hotspot-disc { fill: var(--color-ink); }
+.hotspot:focus-visible .hotspot-disc { stroke: var(--color-sky-accent); stroke-width: 2.5; }
+.hotspot-number { fill: var(--color-navy-950); font-family: var(--font-sans); font-size: 11px; font-weight: 800; pointer-events: none; }
