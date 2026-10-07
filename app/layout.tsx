@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Literata, Noto_Sans_Mongolian, Onest } from "next/font/google";
+import { Providers } from "@/components/Providers";
 import "./globals.css";
 
 // Mongolian Cyrillic letters (Ө, Ү) live in the cyrillic-ext subset.
@@ -54,7 +55,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="mn"
       className={`${onest.variable} ${literata.variable} ${mongolScript.variable} antialiased`}
     >
-      <body className="min-h-dvh font-sans">{children}</body>
+      <body className="min-h-dvh font-sans">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

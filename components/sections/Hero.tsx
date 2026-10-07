@@ -1,4 +1,5 @@
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, GraduationCap } from "lucide-react";
+import Link from "next/link";
 import { HERO, SITE_NAME } from "@/data/site";
 import { HistoryMap } from "../map/HistoryMap";
 import { Reveal } from "../Reveal";
@@ -20,6 +21,7 @@ export function Hero() {
           <div className="flex items-start gap-5">
             <h1
               id="hero-title"
+              data-no-translate
               className="font-serif text-[4.25rem] leading-[0.9] font-bold tracking-tight text-ink sm:text-8xl xl:text-[6.5rem]"
             >
               {first}
@@ -48,6 +50,13 @@ export function Hero() {
               {HERO.primaryCta.label}
               <ArrowDown className="size-4 transition-transform group-hover:translate-y-0.5" aria-hidden />
             </a>
+            <Link
+              href="/learn"
+              className="group inline-flex items-center gap-2.5 rounded-lg border border-gold/50 bg-gold/10 px-5 py-3.5 font-semibold text-gold-soft transition-colors hover:bg-gold/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+            >
+              <GraduationCap className="size-4" aria-hidden />
+              {HERO.learnCta}
+            </Link>
             <a
               href={HERO.secondaryCta.href}
               className="border-b border-white/30 pb-0.5 font-medium text-ink transition-colors hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-accent"

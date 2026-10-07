@@ -11,6 +11,7 @@ import {
   type RouteKind,
 } from "@/data/historyMaps";
 import { FULL_MAP, STORY } from "@/data/site";
+import { ListenButton } from "../ListenButton";
 import { PlaceSymbol, RouteSwatch } from "./mapSymbols";
 
 type EraDetailsProps = {
@@ -26,12 +27,16 @@ const FRONTIER_ORDER = ["north", "south", "east", "west"] as const;
 const ROLE_ORDER = ["realm", "ally", "ruler", "other"] as const;
 
 function Section({ index, title, children }: { index: number; title: string; children: ReactNode }) {
+  const id = `deep-dive-${index}`;
   return (
-    <section className="border-t border-white/10 pt-6">
-      <h2 className="flex items-baseline gap-3 font-serif text-xl font-semibold text-ink sm:text-2xl">
-        <span className="font-mono text-xs font-medium text-gold">{String(index).padStart(2, "0")}</span>
-        {title}
-      </h2>
+    <section id={id} className="border-t border-white/10 pt-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="flex items-baseline gap-3 font-serif text-xl font-semibold text-ink sm:text-2xl">
+          <span className="font-mono text-xs font-medium text-gold">{String(index).padStart(2, "0")}</span>
+          {title}
+        </h2>
+        <ListenButton target={id} />
+      </div>
       <div className="mt-3 text-[15px] leading-relaxed text-muted">{children}</div>
     </section>
   );
@@ -97,14 +102,38 @@ export function EraDetails({ era, detail, map, centre, bounds }: EraDetailsProps
 
   return (
     <div id="deep-dive" className="mx-auto max-w-7xl scroll-mt-20 px-5 pt-16 pb-20 sm:px-8 lg:pt-20">
-      <header className="max-w-3xl border-t border-gold/30 pt-10">
-        <p className="text-[11px] font-semibold tracking-[0.18em] text-gold uppercase">{STORY.deepDive}</p>
+      <header id="deep-dive-intro" className="max-w-3xl border-t border-gold/30 pt-10">
+        <div className="flex items-center gap-3">
+          <p className="text-[11px] font-semibold tracking-[0.18em] text-gold uppercase">{STORY.deepDive}</p>
+          <ListenButton target="deep-dive-intro" />
+        </div>
         <p className="mt-2 font-serif text-3xl font-semibold text-ink sm:text-4xl">{era.name}</p>
         <p className="mt-3 text-lg leading-relaxed text-muted">{era.summary}</p>
       </header>
 
       <div className="mt-10 grid gap-x-14 gap-y-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="space-y-10">
+          {detail.spotlight && (
+            <section
+              id="deep-dive-spotlight"
+              aria-labelledby="spotlight-title"
+              className="rounded-2xl border border-rose-300/25 bg-gradient-to-br from-rose-400/[0.07] to-transparent p-5 sm:p-7"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-[11px] font-semibold tracking-[0.18em] text-rose-200 uppercase">Онцлох сэдэв</p>
+                <ListenButton target="deep-dive-spotlight" />
+              </div>
+              <h2 id="spotlight-title" className="mt-2 font-serif text-2xl font-semibold text-ink sm:text-3xl">
+                {detail.spotlight.title}
+              </h2>
+              <div className="mt-4 space-y-4 text-[15px] leading-relaxed text-muted">
+                {detail.spotlight.paragraphs.map((paragraph) => (
+                  <p key={paragraph.slice(0, 40)}>{paragraph}</p>
+                ))}
+              </div>
+            </section>
+          )}
+
           <Section index={1} title={FULL_MAP.sections.governance}>
             <p>{detail.governance}</p>
           </Section>
@@ -153,8 +182,11 @@ export function EraDetails({ era, detail, map, centre, bounds }: EraDetailsProps
         </div>
 
         <aside className="space-y-10">
-          <section className="border-t border-white/10 pt-6">
-            <h2 className="font-serif text-lg font-semibold text-ink">{FULL_MAP.sections.events}</h2>
+          <section id="deep-dive-events" className="border-t border-white/10 pt-6">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="font-serif text-lg font-semibold text-ink">{FULL_MAP.sections.events}</h2>
+              <ListenButton target="deep-dive-events" />
+            </div>
             <ol className="mt-4 space-y-3.5">
               {detail.events.map((event) => (
                 <li key={`${event.year}-${event.text}`} className="border-l-2 border-gold/50 pl-3">

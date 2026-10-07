@@ -131,6 +131,13 @@ for (const era of ERAS) {
       check(detail.frontiers[side].trim().length > 0, `eraDetails: "${era.id}" has no ${side} frontier`);
     }
     check(detail.figures.length > 0, `eraDetails: "${era.id}" has no figures`);
+    if (detail.spotlight) {
+      check(detail.spotlight.title.trim().length > 0, `eraDetails: "${era.id}" spotlight has no title`);
+      check(
+        detail.spotlight.paragraphs.length > 0 && detail.spotlight.paragraphs.every((p) => p.trim().length > 0),
+        `eraDetails: "${era.id}" spotlight has an empty paragraph`,
+      );
+    }
   }
 }
 const HOTSPOT_KINDS = ["capital", "turning", "route", "secret"] as const;

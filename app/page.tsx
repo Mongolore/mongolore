@@ -2,6 +2,7 @@ import { Navbar } from "@/components/Navbar";
 import { Features } from "@/components/sections/Features";
 import { Footer } from "@/components/sections/Footer";
 import { Hero } from "@/components/sections/Hero";
+import { LearnPromo } from "@/components/sections/LearnPromo";
 import { WhatWeDo } from "@/components/sections/WhatWeDo";
 import { WhoWeAre } from "@/components/sections/WhoWeAre";
 
@@ -17,6 +18,7 @@ const Page = () => {
       <Navbar />
       <main>
         <Hero />
+        <LearnPromo />
         <WhoWeAre />
         <WhatWeDo />
         <Features />

@@ -27,6 +27,7 @@ import {
 } from "@/data/historyMaps";
 import { FULL_MAP, STORY } from "@/data/site";
 import { useMediaQuery } from "@/lib/useMediaQuery";
+import { ListenButton } from "../ListenButton";
 import { EraDetails } from "./EraDetails";
 import { EraStory } from "./EraStory";
 import { EraTimeline } from "./EraTimeline";
@@ -768,10 +769,13 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
                   <X className="size-4" aria-hidden />
                 </button>
               </div>
-              <h2 id="hotspot-card-title" className="mt-2 font-serif text-lg leading-snug font-semibold text-ink">
-                {openCard.title}
-              </h2>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted">{openCard.text}</p>
+              <div id="hotspot-card-text">
+                <h2 id="hotspot-card-title" className="mt-2 font-serif text-lg leading-snug font-semibold text-ink">
+                  {openCard.title}
+                </h2>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted">{openCard.text}</p>
+              </div>
+              <ListenButton target="hotspot-card-text" className="mt-2.5" />
               <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-2.5">
                 <button
                   type="button"

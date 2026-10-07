@@ -5,6 +5,11 @@ import { useState } from "react";
 import type { Era } from "@/data/eras";
 import type { EraStory as Story } from "@/data/eraStories";
 import { STORY } from "@/data/site";
+import { useProgress } from "@/lib/progress";
+import { sfx } from "@/lib/sounds";
+import { ListenButton } from "../ListenButton";
+
+const QUIZ_XP = 10;
 
 type EraStoryProps = {
   era: Era;
@@ -15,10 +20,23 @@ type EraStoryProps = {
 
 const FACT_ICONS = { leaders: Crown, size: Compass, goal: Swords } as const;
 
-function Quiz({ quiz }: { quiz: Story["quiz"] }) {
+function Quiz({ eraId, quiz }: { eraId: string; quiz: Story["quiz"] }) {
   const [picked, setPicked] = useState<number | null>(null);
+  const [gained, setGained] = useState(0);
+  const { award } = useProgress();
   const answered = picked !== null;
   const right = picked === quiz.answer;
+
+  const choose = (i: number) => {
+    setPicked(i);
+    if (i === quiz.answer) {
+      sfx.correct();
+      // Paid once per era, so retrying doesn't farm XP.
+      setGained(award({ xp: QUIZ_XP, claim: `map-quiz:${eraId}` }).granted ? QUIZ_XP : 0);
+    } else {
+      sfx.wrong();
+    }
+  };
 
   return (
     <section aria-labelledby="quiz-title" className="rounded-2xl border border-gold/30 bg-gold/[0.06] p-5 sm:p-7">
@@ -35,7 +53,7 @@ function Quiz({ quiz }: { quiz: Story["quiz"] }) {
               <button
                 type="button"
                 disabled={answered}
-                onClick={() => setPicked(i)}
+                onClick={() => choose(i)}
                 data-state={state}
                 className="flex w-full items-center gap-3 rounded-xl border border-white/15 bg-navy-950/60 px-4 py-3 text-left text-[15px] text-ink transition enabled:hover:border-gold/60 enabled:hover:bg-navy-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-accent data-[state=muted]:opacity-45 data-[state=right]:border-emerald-400/70 data-[state=right]:bg-emerald-400/10 data-[state=wrong]:border-rose-400/70 data-[state=wrong]:bg-rose-400/10"
               >
@@ -60,8 +78,12 @@ function Quiz({ quiz }: { quiz: Story["quiz"] }) {
       <div aria-live="polite" className="mt-4 min-h-6">
         {answered && (
           <div className="flex flex-wrap items-start justify-between gap-3">
-            <p className={`max-w-2xl text-[15px] leading-relaxed ${right ? "text-emerald-200" : "text-rose-100"}`}>
+            <p
+             
+              className={`max-w-2xl text-[15px] leading-relaxed ${right ? "text-emerald-200" : "text-rose-100"}`}
+            >
               {right ? quiz.correct : `${STORY.quizWrong} «${quiz.options[quiz.answer]}».`}
+              {gained > 0 && <span className="ml-2 font-semibold whitespace-nowrap text-gold-soft">+{gained} XP</span>}
             </p>
             <button
               type="button"
@@ -82,18 +104,24 @@ function Quiz({ quiz }: { quiz: Story["quiz"] }) {
 export function EraStory({ era, story, onShowHotspot }: EraStoryProps) {
   return (
     <div id="details" className="mx-auto max-w-7xl scroll-mt-20 px-5 pt-12 sm:px-8 lg:pt-16">
-      <header className="max-w-3xl">
-        <p className="font-mono text-xs tracking-wide text-gold">
-          {era.period} · {era.name}
-        </p>
+      <header id="story-hook" className="max-w-3xl">
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="font-mono text-xs tracking-wide text-gold">
+            {era.period} · {era.name}
+          </p>
+          <ListenButton target="story-hook" />
+        </div>
         <h2 className="mt-2 font-serif text-4xl leading-[1.05] font-bold text-ink sm:text-5xl">{story.hook.title}</h2>
         <p className="mt-4 text-lg leading-relaxed text-muted sm:text-xl">{story.hook.summary}</p>
       </header>
 
-      <section aria-labelledby="nutshell-title" className="mt-10">
-        <h3 id="nutshell-title" className="text-[11px] font-semibold tracking-[0.18em] text-faint uppercase">
-          {STORY.nutshell}
-        </h3>
+      <section id="story-facts" aria-labelledby="nutshell-title" className="mt-10">
+        <div className="flex items-center gap-3">
+          <h3 id="nutshell-title" className="text-[11px] font-semibold tracking-[0.18em] text-faint uppercase">
+            {STORY.nutshell}
+          </h3>
+          <ListenButton target="story-facts" />
+        </div>
         <dl className="mt-3 grid gap-3 md:grid-cols-3">
           {(["leaders", "size", "goal"] as const).map((fact) => {
             const Icon = FACT_ICONS[fact];
@@ -129,26 +157,38 @@ export function EraStory({ era, story, onShowHotspot }: EraStoryProps) {
                   {STORY.hotspotKinds[hotspot.kind]}
                 </p>
               </div>
-              <h4 className="mt-3 font-serif text-lg leading-snug font-semibold text-ink">{hotspot.title}</h4>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{hotspot.text}</p>
-              <button
-                type="button"
-                onClick={() => onShowHotspot(i)}
-                className="mt-4 inline-flex items-center gap-1.5 self-start rounded text-sm font-medium text-gold transition-colors hover:text-gold-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-accent"
-              >
-                <MapPin className="size-4" aria-hidden />
-                {STORY.showOnMap}
-              </button>
+              <div id={`story-hotspot-${i}`} className="flex-1">
+                <h4 className="mt-3 font-serif text-lg leading-snug font-semibold text-ink">{hotspot.title}</h4>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{hotspot.text}</p>
+              </div>
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => onShowHotspot(i)}
+                  className="inline-flex items-center gap-1.5 rounded text-sm font-medium text-gold transition-colors hover:text-gold-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-accent"
+                >
+                  <MapPin className="size-4" aria-hidden />
+                  {STORY.showOnMap}
+                </button>
+                <ListenButton target={`story-hotspot-${i}`} />
+              </div>
             </li>
           ))}
         </ol>
       </section>
 
       <div className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <section aria-labelledby="then-now-title" className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-7">
-          <h3 id="then-now-title" className="font-serif text-xl font-semibold text-ink">
-            {STORY.thenNow}
-          </h3>
+        <section
+          id="story-then-now"
+          aria-labelledby="then-now-title"
+          className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-7"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <h3 id="then-now-title" className="font-serif text-xl font-semibold text-ink">
+              {STORY.thenNow}
+            </h3>
+            <ListenButton target="story-then-now" />
+          </div>
           <ul className="mt-4 space-y-3">
             {story.thenNow.map((line) => (
               <li key={line} className="flex gap-3 text-[15px] leading-relaxed text-muted">
@@ -158,7 +198,7 @@ export function EraStory({ era, story, onShowHotspot }: EraStoryProps) {
             ))}
           </ul>
         </section>
-        <Quiz key={era.id} quiz={story.quiz} />
+        <Quiz key={era.id} eraId={era.id} quiz={story.quiz} />
       </div>
     </div>
   );

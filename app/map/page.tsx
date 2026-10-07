@@ -1,7 +1,7 @@
-import { ArrowDown, ArrowLeft } from "lucide-react";
+import { ArrowDown, GraduationCap } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Logo } from "@/components/Logo";
+import { PageHeader } from "@/components/PageHeader";
 import { FullHistoryMap } from "@/components/map/FullHistoryMap";
 import { ERAS } from "@/data/eras";
 import { FULL_MAP, SITE_NAME } from "@/data/site";
@@ -24,33 +24,22 @@ export default async function MapPage({ searchParams }: PageProps<"/map">) {
       >
         {FULL_MAP.toDetails}
       </a>
-      <header className="sticky top-0 z-40 h-16 border-b border-white/10 bg-navy-900/90 backdrop-blur-lg">
-        <nav aria-label="Үндсэн цэс" className="flex h-full items-center justify-between gap-4 px-4 sm:px-6">
-          <Link
-            href="/"
-            aria-label={`${SITE_NAME} — ${FULL_MAP.home}`}
-            className="flex items-center rounded text-lg text-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-accent"
-          >
-            <Logo />
-          </Link>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <a
-              href="#details"
-              className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-ink focus-visible:outline-2 focus-visible:outline-sky-accent"
-            >
-              {FULL_MAP.toDetails}
-              <ArrowDown className="size-4" aria-hidden />
-            </a>
-            <Link
-              href="/"
-              className="hidden items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-ink focus-visible:outline-2 focus-visible:outline-sky-accent sm:inline-flex"
-            >
-              <ArrowLeft className="size-4" aria-hidden />
-              {FULL_MAP.home}
-            </Link>
-          </div>
-        </nav>
-      </header>
+      <PageHeader>
+        <a
+          href="#details"
+          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-ink focus-visible:outline-2 focus-visible:outline-sky-accent"
+        >
+          <span className="hidden sm:inline">{FULL_MAP.toDetails}</span>
+          <ArrowDown className="size-4" aria-hidden />
+        </a>
+        <Link
+          href="/learn"
+          className="hidden items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-ink focus-visible:outline-2 focus-visible:outline-sky-accent md:inline-flex"
+        >
+          <GraduationCap className="size-4" aria-hidden />
+          Суралцах
+        </Link>
+      </PageHeader>
       <main>
         <FullHistoryMap initialIndex={index === -1 ? 0 : index} />
       </main>

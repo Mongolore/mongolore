@@ -14,6 +14,7 @@ export const HERO = {
     "Одоо үеийн залууст зориулсан Монголын интерактив түүхэн газрын зургийн веб платформ",
   primaryCta: { label: "Газрын зураг үзэх", href: "#map" },
   secondaryCta: { label: "Бидний тухай", href: "#team" },
+  learnCta: "Тоглож суралцах",
   /** Decorative word in traditional Mongolian script ("Монгол"). */
   scriptWord: "ᠮᠣᠩᠭᠣᠯ",
 };

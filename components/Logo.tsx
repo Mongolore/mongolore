@@ -3,7 +3,7 @@ import { SITE_NAME } from "@/data/site";
 export function Logo({ className = "" }: { className?: string }) {
   const [first, ...rest] = SITE_NAME.split(" ");
   return (
-    <span className={`inline-flex items-center gap-2.5 ${className}`}>
+    <span data-no-translate className={`inline-flex items-center gap-2.5 ${className}`}>
       <svg viewBox="0 0 28 28" className="size-7 shrink-0" aria-hidden>
         <path
           d="M3 20.5 9.5 10l4.5 6.2 3.3-4.2L25 20.5"

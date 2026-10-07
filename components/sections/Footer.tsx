@@ -21,7 +21,9 @@ export function Footer() {
           </h2>
           <ul className="mt-4 space-y-2 text-ink/90">
             {TEAM.map((member) => (
-              <li key={member.name}>{member.name}</li>
+              <li key={member.name} data-en={member.nameEn}>
+                {member.name}
+              </li>
             ))}
           </ul>
         </div>

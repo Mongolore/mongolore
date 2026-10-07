@@ -9,12 +9,18 @@
     "lint": "eslint",
     "map:prepare": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/prepare-map-data.mts",
     "check:data": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/validate-data.mts",
-    "map:history": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/prepare-history-maps.mts"
+    "map:history": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/prepare-history-maps.mts",
+    "db:setup": "node scripts/setup-db.mjs",
+    "db:check": "node scripts/check-db.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.2",
     "d3-geo": "^3.1.1",
     "framer-motion": "^13.4.0",
     "lucide-react": "^1.47.0",
+    "msedge-tts": "^2.0.9",
     "next": "16.3.5",
     "react": "19.2.8",
     "react-dom": "19.2.8"
@@ -28,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "mapshaper": "^0.7.61",
+    "pg": "^8.23.1",
     "sharp": "^0.35.4",
     "tailwindcss": "^4",
     "typescript": "^5"

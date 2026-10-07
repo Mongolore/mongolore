@@ -1,8 +1,10 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import { GraduationCap, Menu, X } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { HERO, NAV_LINKS } from "@/data/site";
+import { NAV_LINKS } from "@/data/site";
+import { HeaderActions } from "./HeaderActions";
 import { Logo } from "./Logo";
 
 export function Navbar() {
@@ -38,7 +40,7 @@ export function Navbar() {
           <Logo />
         </a>
 
-        <ul className="hidden items-center gap-8 lg:flex">
+        <ul className="hidden items-center gap-7 xl:flex">
           {NAV_LINKS.map((link) => (
             <li key={link.href}>
               <a
@@ -51,39 +53,55 @@ export function Navbar() {
           ))}
         </ul>
 
-        <a
-          href={HERO.primaryCta.href}
-          className="hidden rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-navy-950 transition-colors hover:bg-gold-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold lg:inline-flex"
-        >
-          {HERO.primaryCta.label}
-        </a>
-
-        <button
-          type="button"
-          className="-mr-2 rounded-lg p-2 text-ink transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-sky-accent lg:hidden"
-          aria-expanded={open}
-          aria-controls="mobile-nav"
-          aria-label={open ? "Цэс хаах" : "Цэс нээх"}
-          onClick={() => setOpen((o) => !o)}
-        >
-          {open ? <X className="size-6" aria-hidden /> : <Menu className="size-6" aria-hidden />}
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/learn"
+            className="hidden items-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 px-3 py-2 text-sm font-semibold text-gold-soft transition hover:bg-gold/20 focus-visible:outline-2 focus-visible:outline-gold xl:inline-flex"
+          >
+            <GraduationCap className="size-4" aria-hidden />
+            Суралцах
+          </Link>
+          <div className="hidden sm:block">
+            <HeaderActions />
+          </div>
+          <button
+            type="button"
+            className="-mr-2 rounded-lg p-2 text-ink transition hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-sky-accent xl:hidden"
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            aria-label={open ? "Цэс хаах" : "Цэс нээх"}
+            onClick={() => setOpen((o) => !o)}
+          >
+            {open ? <X className="size-6" aria-hidden /> : <Menu className="size-6" aria-hidden />}
+          </button>
+        </div>
       </nav>
 
       {open && (
-        <ul id="mobile-nav" className="border-t border-white/10 px-5 py-2 lg:hidden">
-          {NAV_LINKS.map((link) => (
-            <li key={link.href} className="border-b border-white/5 last:border-0">
-              <a
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className="block py-3.5 font-serif text-lg text-ink"
-              >
-                {link.label}
-              </a>
+        <div id="mobile-nav" className="border-t border-white/10 px-5 py-2 xl:hidden">
+          <ul>
+            <li className="border-b border-white/5">
+              <Link href="/learn" onClick={() => setOpen(false)} className="flex items-center gap-2 py-3.5 font-serif text-lg text-gold-soft">
+                <GraduationCap className="size-5" aria-hidden />
+                Суралцах
+              </Link>
             </li>
-          ))}
-        </ul>
+            {NAV_LINKS.map((link) => (
+              <li key={link.href} className="border-b border-white/5 last:border-0">
+                <a
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className="block py-3.5 font-serif text-lg text-ink"
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <div className="py-3 sm:hidden">
+            <HeaderActions />
+          </div>
+        </div>
       )}
     </header>
   );

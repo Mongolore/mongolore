@@ -40,7 +40,9 @@ export function WhoWeAre() {
                   toneClassName={AVATAR_TONES[i % AVATAR_TONES.length]}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="font-serif text-xl font-semibold text-ink">{member.name}</p>
+                  <p className="font-serif text-xl font-semibold text-ink" data-en={member.nameEn}>
+                    {member.name}
+                  </p>
                   <p className="text-sm text-muted">{member.role}</p>
                   {member.school && (
                     <p className="mt-0.5 flex items-center gap-1.5 text-xs text-faint">

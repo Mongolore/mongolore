@@ -32,7 +32,7 @@ export function TeamAvatar({
       aria-hidden
       className={`grid size-14 shrink-0 place-items-center rounded-full font-serif text-2xl font-semibold ring-1 ${toneClassName}`}
     >
-      {member.name.charAt(0)}
+      <span data-en={member.nameEn.charAt(0)}>{member.name.charAt(0)}</span>
     </span>
   );
 }

@@ -23,6 +23,7 @@ import { ERAS } from "@/data/eras";
 import { NEIGHBOURS, type NeighbourCode } from "@/data/neighbours";
 import { FULL_MAP, MAP_PANEL } from "@/data/site";
 import { useMediaQuery } from "@/lib/useMediaQuery";
+import { ListenButton } from "../ListenButton";
 import { EraTimeline } from "./EraTimeline";
 
 const AIMAGS_URL = "/data/mongolia-aimags.geojson";
@@ -266,10 +267,13 @@ export function HistoryMap() {
         </button>
       </div>
       {eraHistory && (
-        <div className="mt-3 border-l-2 border-gold pl-3">
-          <p className="text-xs font-medium text-gold-soft">
-            {era.name} · {era.period}
-          </p>
+        <div id="region-history" className="mt-3 border-l-2 border-gold pl-3">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-medium text-gold-soft">
+              {era.name} · {era.period}
+            </p>
+            <ListenButton target="region-history" />
+          </div>
           <p className="mt-1 text-sm leading-relaxed text-muted">{eraHistory}</p>
         </div>
       )}
@@ -513,9 +517,14 @@ export function HistoryMap() {
 
       <div className="grid gap-px border-t border-white/10 bg-white/10 lg:grid-cols-2">
         <div aria-live="polite" className="bg-navy-950/80 px-4 py-4 sm:px-5">
-          <p className="font-mono text-[11px] tracking-wide text-gold">{era.period}</p>
-          <h3 className="mt-1 font-serif text-xl font-semibold text-ink">{era.name}</h3>
-          <p className="mt-2 text-sm leading-relaxed text-muted">{era.summary}</p>
+          <div id="era-summary">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-mono text-[11px] tracking-wide text-gold">{era.period}</p>
+              <ListenButton target="era-summary" />
+            </div>
+            <h3 className="mt-1 font-serif text-xl font-semibold text-ink">{era.name}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-muted">{era.summary}</p>
+          </div>
           <ul className="mt-3 flex flex-wrap gap-1.5">
             {era.sites.map((site) => (
               <li

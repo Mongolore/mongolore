@@ -4,11 +4,13 @@ import {
   Box,
   CalendarRange,
   FileText,
+  Languages,
   LayoutDashboard,
   ListChecks,
   MapPinned,
   MonitorSmartphone,
   Search,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -33,7 +35,7 @@ export const FEATURES: Feature[] = [
     title: "Интерактив газрын зураг",
     description: "Аймаг, сумын хил бүхий газрын зураг дээр түүхэн үйл явдлыг цэгээр харуулна.",
     icon: MapPinned,
-    implemented: false,
+    implemented: true,
   },
   {
     id: "timeline",
@@ -52,9 +54,23 @@ export const FEATURES: Feature[] = [
   {
     id: "audio",
     title: "Монгол аудио тайлбар",
-    description: "Текстийг монгол яриа болгож, хурдыг тохируулан сонсоно.",
+    description: "Түүхийн мэдээлэл бүрийн «Сонсох» товчийг дарж монгол AI хоолойгоор сонсоно.",
     icon: AudioLines,
-    implemented: false,
+    implemented: true,
+  },
+  {
+    id: "translate",
+    title: "Англи хэлний орчуулга",
+    description: "Нэг товчоор бүх хуудсыг англи хэл рүү AI-аар орчуулна.",
+    icon: Languages,
+    implemented: true,
+  },
+  {
+    id: "accounts",
+    title: "Бүртгэл ба нэвтрэх",
+    description: "Бүртгүүлээд ахицаа бүх төхөөрөмж дээрээ хадгална.",
+    icon: UserRound,
+    implemented: true,
   },
   {
     id: "search",
@@ -87,15 +103,15 @@ export const FEATURES: Feature[] = [
   {
     id: "quiz",
     title: "Түүхийн сорил",
-    description: "Эрин үе бүрийн богино асуултууд.",
+    description: "Эрин үе бүрийн богино хичээл: асуулт, дараалал, хос холбох даалгавар.",
     icon: ListChecks,
-    implemented: false,
+    implemented: true,
   },
   {
     id: "progress",
     title: "Ахиц ба тэмдэг",
-    description: "Үзсэн үйл явдал, авсан шагналаа хянана.",
+    description: "XP, түвшин, өдөр бүрийн цуваа, өдрийн зорилгоо хянана.",
     icon: Award,
-    implemented: false,
+    implemented: true,
   },
 ];
