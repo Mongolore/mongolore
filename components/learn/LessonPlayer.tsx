@@ -5,6 +5,7 @@ import { CheckCircle2, Flame, Heart, Lock, RotateCcw, Star, Target, Trophy, X, X
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ERAS } from "@/data/eras";
+import { useAuth } from "@/lib/auth";
 import { buildQuestions, findLesson, previousLesson, type Question } from "@/lib/lessons";
 import { levelInfo, useProgress, type AwardResult } from "@/lib/progress";
 import { sfx } from "@/lib/sounds";
@@ -428,12 +429,43 @@ function Results({
 /** A lesson: checks it's unlocked, then runs attempts until the learner leaves. */
 export function LessonPlayer({ lessonId }: { lessonId: string }) {
   const { progress, ready } = useProgress();
+  const { user, loading, configured, openDialog } = useAuth();
   const [attempt, setAttempt] = useState(0);
   const prev = previousLesson(lessonId);
   const locked = ready && prev !== undefined && !progress.completed[prev.id];
 
-  if (!ready) {
+  if (!ready || loading) {
     return <div className="grid min-h-dvh place-items-center text-muted">Ачаалж байна…</div>;
+  }
+
+  // Lessons are for signed-in learners (guest mode only when Supabase isn't configured).
+  if (configured && !user) {
+    return (
+      <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-5 text-center">
+        <Lock className="size-14 text-faint" aria-hidden />
+        <h1 className="mt-4 font-serif text-3xl font-bold text-ink">Нэвтэрч суралцаарай</h1>
+        <p className="mt-2 text-muted">Хичээл үзэхийн тулд нэвтэрнэ үү эсвэл бүртгүүлнэ үү.</p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => openDialog("login")}
+            className="rounded-2xl bg-gold px-8 py-3 font-bold text-navy-950 shadow-[0_4px_0_#a87a23] hover:bg-gold-soft"
+          >
+            Нэвтрэх
+          </button>
+          <button
+            type="button"
+            onClick={() => openDialog("signup")}
+            className="rounded-2xl border border-white/15 px-8 py-3 font-bold text-ink hover:bg-white/5"
+          >
+            Бүртгүүлэх
+          </button>
+        </div>
+        <Link href="/learn" className="mt-6 text-sm text-muted hover:text-ink">
+          Замаа харах
+        </Link>
+      </main>
+    );
   }
 
   if (locked) {

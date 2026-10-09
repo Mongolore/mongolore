@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { BookOpen, Check, Crown, Lock, Map as MapIcon, Star } from "lucide-react";
 import Link from "next/link";
 import { ERA_STORIES } from "@/data/eraStories";
+import { useAuth } from "@/lib/auth";
 import { LESSONS, UNITS, type Lesson } from "@/lib/lessons";
 import { useProgress } from "@/lib/progress";
 
@@ -20,6 +21,7 @@ type NodeState = "done" | "current" | "locked";
 
 function LessonNode({ lesson, state, stars, offset }: { lesson: Lesson; state: NodeState; stars: number; offset: number }) {
   const reduce = useReducedMotion();
+  const { user, configured, openDialog } = useAuth();
   const Icon = state === "done" ? (stars === 3 ? Crown : Check) : state === "locked" ? Lock : BookOpen;
   const circle = (
     <span
@@ -63,6 +65,12 @@ function LessonNode({ lesson, state, stars, offset }: { lesson: Lesson; state: N
       ) : (
         <Link
           href={`/learn/${lesson.id}`}
+          onClick={(e) => {
+            if (configured && !user) {
+              e.preventDefault();
+              openDialog("login");
+            }
+          }}
           className="group relative flex w-40 flex-col items-center rounded-3xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-accent"
         >
           {state === "current" && (
