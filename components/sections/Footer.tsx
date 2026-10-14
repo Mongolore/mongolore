@@ -1,6 +1,5 @@
 import { ArrowUp } from "lucide-react";
-import { FOOTER, NAV_LINKS, SITE_NAME, SITE_YEAR } from "@/data/site";
-import { TEAM } from "@/data/team";
+import { FOOTER, HERO, NAV_LINKS, SITE_NAME, SITE_YEAR } from "@/data/site";
 import { Logo } from "../Logo";
 import { OrnamentBand } from "../Ornament";
 
@@ -8,24 +7,12 @@ export function Footer() {
   return (
     <footer className="bg-navy-950">
       <OrnamentBand className="text-gold/30" />
-      <div className="mx-auto grid max-w-7xl gap-12 px-5 pt-16 pb-10 sm:px-8 md:grid-cols-[2fr_1fr_1fr]">
+      <div className="mx-auto grid max-w-7xl gap-12 px-5 pt-16 pb-10 sm:px-8 md:grid-cols-[2fr_1fr]">
         <div>
           <a href="#top" className="text-2xl text-ink">
             <Logo />
           </a>
-        </div>
-
-        <div>
-          <h2 className="text-xs font-semibold tracking-[0.18em] text-faint uppercase">
-            {FOOTER.teamLabel}
-          </h2>
-          <ul className="mt-4 space-y-2 text-ink/90">
-            {TEAM.map((member) => (
-              <li key={member.name} data-en={member.nameEn}>
-                {member.name}
-              </li>
-            ))}
-          </ul>
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">{HERO.subtitle}</p>
         </div>
 
         <nav aria-label="Хөлийн цэс">

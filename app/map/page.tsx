@@ -34,10 +34,11 @@ export default async function MapPage({ searchParams }: PageProps<"/map">) {
         </a>
         <Link
           href="/learn"
-          className="hidden items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-ink focus-visible:outline-2 focus-visible:outline-sky-accent md:inline-flex"
+          aria-label="Суралцах"
+          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-ink focus-visible:outline-2 focus-visible:outline-sky-accent"
         >
           <GraduationCap className="size-4" aria-hidden />
-          Суралцах
+          <span className="hidden md:inline">Суралцах</span>
         </Link>
       </PageHeader>
       <main>

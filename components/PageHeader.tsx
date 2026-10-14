@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { SITE_NAME } from "@/data/site";
@@ -9,6 +10,15 @@ export function PageHeader({ children }: { children?: ReactNode }) {
   return (
     <header className="sticky top-0 z-40 h-16 border-b border-white/10 bg-navy-900/90 backdrop-blur-lg">
       <nav aria-label="Үндсэн цэс" className="flex h-full items-center justify-between gap-3 px-4 sm:px-6">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+        <Link
+          href="/"
+          aria-label="Нүүр хуудас руу буцах"
+          className="inline-flex items-center gap-1.5 rounded-lg px-2 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-ink focus-visible:outline-2 focus-visible:outline-sky-accent"
+        >
+          <ArrowLeft className="size-4" aria-hidden />
+          <span className="hidden sm:inline">Буцах</span>
+        </Link>
         <Link
           href="/"
           aria-label={`${SITE_NAME} — нүүр хуудас`}
@@ -16,6 +26,7 @@ export function PageHeader({ children }: { children?: ReactNode }) {
         >
           <Logo />
         </Link>
+        </div>
         <div className="flex min-w-0 items-center gap-1 sm:gap-2">
           {children}
           <HeaderActions />

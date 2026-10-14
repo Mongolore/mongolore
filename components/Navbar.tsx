@@ -4,7 +4,7 @@ import { GraduationCap, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { NAV_LINKS } from "@/data/site";
-import { HeaderActions } from "./HeaderActions";
+import { HeaderActions, LanguageToggle } from "./HeaderActions";
 import { Logo } from "./Logo";
 
 export function Navbar() {
@@ -63,6 +63,9 @@ export function Navbar() {
           </Link>
           <div className="hidden sm:block">
             <HeaderActions />
+          </div>
+          <div className="sm:hidden">
+            <LanguageToggle />
           </div>
           <button
             type="button"

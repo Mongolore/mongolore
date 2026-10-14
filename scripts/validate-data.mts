@@ -15,7 +15,6 @@ import { AIMAG_EVENTS, MAP_HISTORICAL_DATA } from "../data/aimagInfo.ts";
 import { ERA_DETAILS } from "../data/eraDetails.ts";
 import { ERAS } from "../data/eras.ts";
 import { ERA_STORIES } from "../data/eraStories.ts";
-import { FEATURES } from "../data/features.ts";
 import { ERA_MAPS } from "../data/historyMaps.ts";
 import { NEIGHBOURS } from "../data/neighbours.ts";
 import { TEAM } from "../data/team.ts";
@@ -186,12 +185,6 @@ for (const id of [...Object.keys(ERA_MAPS), ...Object.keys(ERA_DETAILS), ...Obje
   check(eraIds.has(id), `historyMaps/eraDetails/eraStories: "${id}" is not an era id`);
 }
 
-const featureIds = new Set<string>();
-for (const feature of FEATURES) {
-  check(!featureIds.has(feature.id), `features: duplicate id "${feature.id}"`);
-  featureIds.add(feature.id);
-}
-
 for (const iso of Object.keys(AIMAG_EVENTS)) {
   check(iso in REGIONS, `aimagInfo: unknown region "${iso}"`);
 }
@@ -208,5 +201,5 @@ if (problems.length > 0) {
 }
 
 console.log(
-  `OK: ${ERAS.length} eras, ${FEATURES.length} features, ${TEAM.length} team members, ${Object.keys(REGIONS).length} regions.`,
+  `OK: ${ERAS.length} eras, ${TEAM.length} team members, ${Object.keys(REGIONS).length} regions.`,
 );

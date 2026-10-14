@@ -18,10 +18,11 @@ export default function LearnPage() {
       <PageHeader>
         <Link
           href="/map"
-          className="hidden items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-ink focus-visible:outline-2 focus-visible:outline-sky-accent md:inline-flex"
+          aria-label="Газрын зураг"
+          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-sm text-muted transition hover:bg-white/5 hover:text-ink focus-visible:outline-2 focus-visible:outline-sky-accent"
         >
           <MapIcon className="size-4" aria-hidden />
-          Газрын зураг
+          <span className="hidden md:inline">Газрын зураг</span>
         </Link>
       </PageHeader>
 

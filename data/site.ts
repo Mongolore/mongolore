@@ -3,17 +3,15 @@ export const SITE_NAME = "ТҮҮХ MAP";
 export const SITE_YEAR = 2026;
 
 export const NAV_LINKS = [
-  { href: "#map", label: "Газрын зураг" },
+  { href: "/map", label: "Түүхэн газрын зураг" },
+  { href: "#eras", label: "Эрин үеүд" },
   { href: "#team", label: "Бид хэн бэ?" },
-  { href: "#what-we-do", label: "Бид юу хийдэг вэ?" },
-  { href: "#features", label: "Боломжууд" },
 ] as const;
 
 export const HERO = {
   subtitle:
     "Одоо үеийн залууст зориулсан Монголын интерактив түүхэн газрын зургийн веб платформ",
-  primaryCta: { label: "Газрын зураг үзэх", href: "#map" },
-  secondaryCta: { label: "Бидний тухай", href: "#team" },
+  primaryCta: { label: "Түүхэн газрын зураг нээх", href: "/map" },
   learnCta: "Тоглож суралцах",
   /** Decorative word in traditional Mongolian script ("Монгол"). */
   scriptWord: "ᠮᠣᠩᠭᠣᠯ",
@@ -22,8 +20,6 @@ export const HERO = {
 export const MAP_PANEL = {
   title: "Монгол Улс",
   meta: "21 аймаг · нийслэл Улаанбаатар",
-  /** Geographic centre of Mongolia, shown as a cartographic detail. */
-  coordinates: "46°52′ х.ө. · 103°51′ з.у.",
   hint: "Аймаг дээр дарж эсвэл Tab товчоор сонгоно уу",
   legend: {
     era: "Тухайн үеийн голомт",
@@ -43,6 +39,12 @@ export const TIMELINE = {
   next: "Дараагийн үе",
 };
 
+export const ERA_STRIP = {
+  title: "2200 жилийн аялал",
+  intro: "Эрин үеээ сонгоод газрын зураг дээр тухайн үеийн хил, нийслэл, аян дайныг үз — өнөөгийн Монголтой харьцуулаарай.",
+  cta: "Газрын зураг дээр үзэх",
+};
+
 export const TEAM_SECTION = {
   title: "Бид хэн бэ?",
   intro:
@@ -50,36 +52,7 @@ export const TEAM_SECTION = {
   rosterLabel: "Багийн гишүүд",
 };
 
-export const WHAT_WE_DO = {
-  title: "Бид юу хийдэг вэ?",
-  intro:
-    "Бид Монголын түүхэн үйл явдал, дурсгалт газар, түүхэн хүмүүсийг газрын зураг дээр байршуулж, цаг хугацааны шугам болон монгол аудио тайлбараар дамжуулан түүхийг хялбар, сонирхолтой болгодог.",
-  problemLabel: "Өнөөдөр",
-  solutionLabel: "ТҮҮХ MAP дээр",
-  items: [
-    {
-      problem: "Уйтгартай сурах арга",
-      solution: "Газрын зураг, зураг, аудиогоор сурна",
-    },
-    {
-      problem: "Ном сурах бичиг хүрэлцдэггүй",
-      solution: "Хэзээ ч, хаанаас ч нээгдэх цахим архив",
-    },
-    {
-      problem: "Тархай бутархай мэдээлэл",
-      solution: "Эх сурвалжтай, нэг дор цэгцэлсэн мэдээлэл",
-    },
-  ],
-};
-
-export const FEATURES_SECTION = {
-  title: "Боломжууд",
-  availableLabel: "Ашиглах боломжтой",
-  soonLabel: "Удахгүй",
-};
-
 export const FOOTER = {
-  teamLabel: "Баг",
   navLabel: "Хэсгүүд",
   backToTop: "Дээш буцах",
 };
@@ -96,8 +69,6 @@ export const FULL_MAP = {
   loading: "Газрын зураг ачаалж байна…",
   failed: "Газрын зургийг ачаалж чадсангүй. Хуудсаа дахин ачаална уу.",
   snapshotLabel: "Хилийн зураглал",
-  centreLabel: "Төв",
-  boundsLabel: "Хүрээ",
   legendTitle: "Тэмдэглэгээ",
   legendHint: "Замын төрлийг дарж нуух, харуулна уу",
   roles: {
@@ -137,7 +108,6 @@ export const FULL_MAP = {
   placesLabel: "Газрууд",
   sourceLabel: "Хилийн эх сурвалж",
   hydroLabel: "Гол мөрөн",
-  geojsonLabel: "GeoJSON татах",
   precisionNote:
     "Эртний үеийн хил ойролцоо: нүүдэлчдийн хил тогтмол шугам биш, бэлчээр, харьяат аймгуудын хамаарлаар өөрчлөгдөж байв.",
 };
@@ -168,4 +138,15 @@ export const STORY = {
   quizWrong: "Бараг л! Зөв хариулт нь:",
   quizRetry: "Дахин оролдох",
   deepDive: "Гүнзгийрүүлж судлах",
+};
+
+/** "Then vs today" comparison on /map. */
+export const COMPARE = {
+  on: "Өнөөдөртэй харьцуулах",
+  off: "Харьцуулалтыг хаах",
+  today: "Өнөөдөр",
+  todayName: "Өнөөгийн Монгол",
+  bigger: "өнөөгийн Монголоос том",
+  smaller: "өнөөгийн Монголоос жижиг",
+  handle: "Тэр үе ба өнөөдрийг харьцуулах шугам",
 };

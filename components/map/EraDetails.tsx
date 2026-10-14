@@ -1,4 +1,3 @@
-import { Download } from "lucide-react";
 import type { ReactNode } from "react";
 import type { EraDetail } from "@/data/eraDetails";
 import type { Era } from "@/data/eras";
@@ -18,9 +17,6 @@ type EraDetailsProps = {
   era: Era;
   detail: EraDetail;
   map: EraMap;
-  /** Formatted centre and bounds of the map frame, as shown on the map. */
-  centre: string;
-  bounds: string;
 };
 
 const FRONTIER_ORDER = ["north", "south", "east", "west"] as const;
@@ -97,7 +93,7 @@ function mapEntities(map: EraMap) {
 }
 
 /** The academic deep dive on the era, below the story section. */
-export function EraDetails({ era, detail, map, centre, bounds }: EraDetailsProps) {
+export function EraDetails({ era, detail, map }: EraDetailsProps) {
   const entities = mapEntities(map);
 
   return (
@@ -218,20 +214,9 @@ export function EraDetails({ era, detail, map, centre, bounds }: EraDetailsProps
             <h2 className="font-serif text-lg font-semibold text-ink">{FULL_MAP.sections.map}</h2>
             <p className="mt-3 leading-relaxed">{map.note}</p>
             <p className="mt-2 text-xs leading-relaxed text-faint">{FULL_MAP.precisionNote}</p>
-            <dl className="mt-4 space-y-1.5 font-mono text-[11px] text-faint">
-              <div>
-                <dt className="inline text-muted">{FULL_MAP.snapshotLabel}: </dt>
-                <dd className="inline">{map.snapshot}</dd>
-              </div>
-              <div>
-                <dt className="inline text-muted">{FULL_MAP.centreLabel}: </dt>
-                <dd className="inline">{centre}</dd>
-              </div>
-              <div>
-                <dt className="inline text-muted">{FULL_MAP.boundsLabel}: </dt>
-                <dd className="inline">{bounds}</dd>
-              </div>
-            </dl>
+            <p className="mt-4 font-mono text-[11px] text-faint">
+              {FULL_MAP.snapshotLabel}: {map.snapshot}
+            </p>
             <p className="mt-4 text-xs">
               {FULL_MAP.sourceLabel}:{" "}
               <a href={HISTORY_SOURCE.url} target="_blank" rel="noreferrer" className="text-sky-soft underline-offset-2 hover:underline">
@@ -243,14 +228,6 @@ export function EraDetails({ era, detail, map, centre, bounds }: EraDetailsProps
               </a>
               .
             </p>
-            <a
-              href={`/data/history/${era.id}.geojson`}
-              download
-              className="mt-4 inline-flex items-center gap-2 rounded-lg border border-white/15 px-3 py-1.5 text-xs font-medium text-ink transition hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-sky-accent"
-            >
-              <Download className="size-3.5" aria-hidden />
-              {FULL_MAP.geojsonLabel}
-            </a>
           </section>
         </aside>
       </div>

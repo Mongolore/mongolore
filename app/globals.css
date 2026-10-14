@@ -170,6 +170,12 @@ body::after {
 .polity[data-role="ruler"] { fill: #342a4c; stroke: rgb(196 160 232 / 0.6); stroke-width: 0.9; }
 .polity[data-role="ally"] { fill: url(#ally-hatch); stroke: rgb(232 176 75 / 0.6); stroke-width: 0.7; stroke-dasharray: 3 2; }
 .polity[data-role="realm"] { fill: #4d3b1d; stroke: var(--color-gold); stroke-width: 1.2; }
+.polity[data-role="today"] { fill: #1d4a72; stroke: var(--color-sky-soft); stroke-width: 1.2; }
+
+/* "Then vs today" comparison */
+.today-outline { fill: none; stroke: var(--color-sky-soft); stroke-width: 1.6; stroke-dasharray: 5 4; stroke-linejoin: round; }
+.realm-ghost { fill: rgb(232 176 75 / 0.08); stroke: var(--color-gold); stroke-width: 1.2; stroke-dasharray: 4 3; stroke-linejoin: round; }
+.polity-label-today { fill: #d6eaf9; font-size: 14px; font-weight: 700; letter-spacing: 0.14em; }
 
 .era-fade { animation: fade-in 0.45s ease-out; }
 

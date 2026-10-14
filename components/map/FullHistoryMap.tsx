@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  geoArea,
   geoConicEqualArea,
   geoDistance,
   geoGraticule,
@@ -8,8 +9,17 @@ import {
   type GeoPermissibleObjects,
   type GeoProjection,
 } from "d3-geo";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { ChevronLeft, ChevronRight, ChevronsLeftRight, Columns2, X } from "lucide-react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+  type RefObject,
+} from "react";
 import { ERA_DETAILS } from "@/data/eraDetails";
 import { ERAS } from "@/data/eras";
 import { ERA_STORIES } from "@/data/eraStories";
@@ -25,7 +35,7 @@ import {
   type RouteKind,
   type ViewWindow,
 } from "@/data/historyMaps";
-import { FULL_MAP, STORY } from "@/data/site";
+import { COMPARE, FULL_MAP, STORY } from "@/data/site";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import { ListenButton } from "../ListenButton";
 import { EraDetails } from "./EraDetails";
@@ -44,6 +54,13 @@ const HEADER_HEIGHT = 64;
 /** Landforms crowd the Mongolian plateau on continent-wide views. */
 const LANDFORM_MAX_SPAN = 100;
 const EARTH_RADIUS_KM = 6371;
+/** The era drawn as "today" when comparing. */
+const TODAY_ID = "democracy";
+const TODAY_LABEL_AT: LonLat = [103.5, 46.6];
+
+const km2 = (steradians: number) => steradians * EARTH_RADIUS_KM ** 2;
+const formatArea = (km: number) =>
+  km >= 1e6 ? `${(km / 1e6).toFixed(1)} сая км²` : `${Math.round(km / 1000).toLocaleString("en-US")} мянган км²`;
 
 type Role = PolityRole | "land";
 type PolityProps = { name: string | null; role: Role; label?: string; labelAt?: LonLat };
@@ -97,10 +114,6 @@ function niceScale(kmPer100px: number) {
   return [100, 200, 250, 500, 1000, 2000].reduce((best, km) =>
     Math.abs(km - target) < Math.abs(best - target) ? km : best,
   );
-}
-
-function formatDegrees(a: number, b: number) {
-  return a === b ? `${a}°` : `${a}–${b}°`;
 }
 
 function useLoader() {
@@ -192,6 +205,9 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
   const [legendOpen, setLegendOpen] = useState<boolean | null>(null);
   const [tip, setTip] = useState<Tip | null>(null);
   const [activeRoute, setActiveRoute] = useState<number | null>(null);
+  // "Then vs today": a swipe divider, the era on its left and today's borders on its right.
+  const [compare, setCompare] = useState(false);
+  const [split, setSplit] = useState(0.5);
   // The open hotspot card, remembered per era so switching eras closes it.
   const [openHotspot, setOpenHotspot] = useState<{ era: string; index: number } | null>(null);
   const hotspotRefs = useRef<(SVGGElement | null)[]>([]);
@@ -214,12 +230,19 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
   const mapId = loaded[era.id] ? era.id : shownId;
   const mapConfig = ERA_MAPS[mapId];
   const data = loaded[mapId];
+  const canCompare = era.id !== TODAY_ID;
+  const comparing = compare && canCompare;
+  const today = loaded[TODAY_ID];
 
   useEffect(() => {
     load(era.id);
     // Warm the neighbours so dragging the timeline doesn't wait on the network.
     for (const i of [eraIndex - 1, eraIndex + 1]) if (ERAS[i]) load(ERAS[i].id);
   }, [era.id, eraIndex, load]);
+
+  useEffect(() => {
+    if (compare) load(TODAY_ID);
+  }, [compare, load]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -248,6 +271,29 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
       .map((f, i) => ({ key: `${f.properties.name}-${i}`, role: f.properties.role, d: path(f.geometry) ?? "" }))
       .sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role));
     const modernRealm = drawn.modernRealm && outline ? (path(outline) ?? "") : "";
+    const realmFeatures = data.features.filter((f) => f.properties.role === "realm");
+    const realmOutline = realmFeatures.map((f) => path(f.geometry) ?? "").concat(modernRealm ? [modernRealm] : []);
+    const todayOutline = outline ? (path(outline) ?? "") : "";
+
+    // Today's borders in the same projection, for the comparison swipe.
+    const todayMap = ERA_MAPS[TODAY_ID];
+    const todayPolities = (today?.features ?? []).map((f, i) => ({
+      key: `today-${i}`,
+      role: f.properties.role,
+      d: path(f.geometry) ?? "",
+    }));
+    const todayLabels = Object.values(todayMap.polities)
+      .flatMap((p) => (p.label && p.labelAt ? [{ text: p.label, at: p.labelAt, realm: false }] : []))
+      .concat([{ text: todayMap.modernRealm?.label ?? "", at: TODAY_LABEL_AT, realm: true }])
+      .flatMap((l) => {
+        const p = projection(l.at);
+        return p && inside(p) ? [{ ...l, x: p[0], y: p[1] }] : [];
+      });
+
+    // Area of the era's Mongol state(s) against today's Mongolia.
+    const todayArea = outline ? km2(geoArea(outline)) : 0;
+    const realmArea =
+      realmFeatures.reduce((sum, f) => sum + km2(geoArea(f.geometry)), 0) + (drawn.modernRealm ? todayArea : 0);
 
     const rivers: string[] = [];
     const lakes: string[] = [];
@@ -385,6 +431,12 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
       height,
       polities,
       modernRealm,
+      realmOutline,
+      todayOutline,
+      todayPolities,
+      todayLabels,
+      todayArea,
+      realmArea,
       rivers,
       lakes,
       routes,
@@ -396,7 +448,7 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
       scaleWidth: kmPer100 ? (scaleKm / kmPer100) * 100 : 0,
       roles: new Set(polities.map((p) => p.role).concat(modernRealm ? ["realm"] : [])),
     };
-  }, [size, data, mapId, mapConfig, outline, hydro]);
+  }, [size, data, mapId, mapConfig, outline, hydro, today]);
 
   const openIndex = openHotspot?.era === mapId ? openHotspot.index : null;
   const openCard = openIndex !== null ? map?.hotspots.find((h) => h.i === openIndex) : undefined;
@@ -443,9 +495,26 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
       return next;
     });
 
-  const { view } = config;
-  const centre = `${Math.round((view.south + view.north) / 2)}° х.ө. · ${Math.round((view.west + view.east) / 2)}° з.у.`;
-  const bounds = `${formatDegrees(view.south, view.north)} х.ө. · ${formatDegrees(view.west, view.east)} з.у.`;
+  const moveSplit = (clientX: number) => {
+    const rect = stageRef.current?.getBoundingClientRect();
+    if (!rect || rect.width === 0) return;
+    setSplit(Math.min(0.95, Math.max(0.05, (clientX - rect.left) / rect.width)));
+  };
+  const onSplitDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    moveSplit(e.clientX);
+  };
+  const onSplitMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) moveSplit(e.clientX);
+  };
+  const onSplitKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    const step = { ArrowLeft: -0.05, ArrowRight: 0.05, Home: -1, End: 1 }[e.key];
+    if (step === undefined) return;
+    e.preventDefault();
+    setSplit((s) => Math.min(0.95, Math.max(0.05, s + step)));
+  };
+  const splitX = map ? map.width * split : 0;
+  const ratio = map && map.todayArea > 0 ? map.realmArea / map.todayArea : 0;
 
   const tipFromPoint = (x: number, y: number, eyebrow: string, title: string, body?: string) =>
     setTip({ x, y, eyebrow, title, body });
@@ -497,6 +566,43 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
                 ))}
                 {map.modernRealm && <path d={map.modernRealm} className="polity" data-role="realm" />}
               </g>
+
+              {comparing && map.todayPolities.length > 0 && (
+                <g aria-hidden pointerEvents="none">
+                  <defs>
+                    <clipPath id="today-clip">
+                      <rect x={splitX} y={0} width={Math.max(0, map.width - splitX)} height={map.height} />
+                    </clipPath>
+                  </defs>
+                  <g clipPath="url(#today-clip)">
+                    <rect width={map.width} height={map.height} fill="#0b1327" />
+                    <path d={map.graticule} fill="none" stroke="#8CC6EF" strokeOpacity="0.07" strokeWidth="0.6" />
+                    {map.todayPolities.map((p) => (
+                      <path key={p.key} d={p.d} className="polity" data-role={p.role} />
+                    ))}
+                    <path d={map.todayOutline} className="polity" data-role="today" />
+                    {/* The era's Mongol state, ghosted over today's map */}
+                    {map.realmOutline.map((d, i) => (
+                      <path key={i} d={d} className="realm-ghost" />
+                    ))}
+                    {map.todayLabels.map((l) => (
+                      <text
+                        key={l.text}
+                        x={l.x}
+                        y={l.y}
+                        textAnchor="middle"
+                        className={`map-label polity-label ${l.realm ? "polity-label-today" : "polity-label-other"}`}
+                      >
+                        {l.realm ? l.text.toUpperCase() : l.text}
+                      </text>
+                    ))}
+                  </g>
+                </g>
+              )}
+
+              {comparing && map.todayOutline && (
+                <path aria-hidden pointerEvents="none" d={map.todayOutline} className="today-outline" />
+              )}
 
               <g aria-hidden pointerEvents="none">
                 {map.lakes.map((d, i) => (
@@ -565,8 +671,24 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
                 })}
               </g>
 
+              {comparing && (
+                <defs>
+                  <clipPath id="era-clip">
+                    <rect x={0} y={0} width={splitX} height={map.height} />
+                  </clipPath>
+                </defs>
+              )}
+              <g aria-hidden pointerEvents="none" clipPath={comparing ? "url(#era-clip)" : undefined}>
+                {map.labels
+                  .filter((label) => label.className.startsWith("polity-label"))
+                  .map((label) => (
+                    <text key={label.key} x={label.x} y={label.y} textAnchor={label.anchor} className={`map-label ${label.className}`}>
+                      {label.text}
+                    </text>
+                  ))}
+              </g>
               <g aria-hidden pointerEvents="none">
-                {map.labels.map((label) => (
+                {map.labels.filter((label) => !label.className.startsWith("polity-label")).map((label) => (
                   <text key={label.key} x={label.x} y={label.y} textAnchor={label.anchor} className={`map-label ${label.className}`}>
                     {label.text}
                   </text>
@@ -638,12 +760,79 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
               {era.name}
             </h1>
             <p className="mt-0.5 font-serif text-sm text-gold-soft italic">{story.hook.title}</p>
-            <p className="mt-1.5 hidden font-mono text-[10.5px] leading-relaxed text-faint sm:block">
-              {FULL_MAP.centreLabel}: {centre}
-              <br />
-              {FULL_MAP.boundsLabel}: {bounds}
-            </p>
           </div>
+
+          {/* Then vs today: toggle, size comparison and the swipe divider */}
+          {map && canCompare && (
+            <div className="absolute top-3 right-3 z-10 flex max-w-[calc(100%-1.5rem)] flex-col items-end gap-2 sm:top-5 sm:right-5">
+              <button
+                type="button"
+                onClick={() => setCompare((c) => !c)}
+                aria-pressed={comparing}
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-lg shadow-black/30 backdrop-blur-md transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-accent ${
+                  comparing
+                    ? "border-sky-soft bg-sky-accent text-navy-950 hover:bg-sky-soft"
+                    : "border-sky-accent/50 bg-navy-950/85 text-sky-soft hover:border-sky-soft hover:bg-navy-800"
+                }`}
+              >
+                <Columns2 className="size-4" aria-hidden />
+                {comparing ? COMPARE.off : COMPARE.on}
+              </button>
+              {comparing && ratio > 0 && (
+                <div
+                  aria-live="polite"
+                  className="rounded-xl border border-white/10 bg-navy-950/85 px-3.5 py-2.5 text-right text-xs text-muted shadow-lg shadow-black/30 backdrop-blur-md"
+                >
+                  <p>
+                    <span className="font-semibold text-gold-soft">{era.name}</span> ≈ {formatArea(map.realmArea)}
+                  </p>
+                  <p>
+                    <span className="font-semibold text-sky-soft">{COMPARE.todayName}</span> ≈ {formatArea(map.todayArea)}
+                  </p>
+                  {Math.abs(ratio - 1) >= 0.1 && (
+                    <p className="mt-1 font-serif text-base font-semibold text-ink">
+                      {ratio > 1 ? `${ratio.toFixed(ratio >= 10 ? 0 : 1)}× ${COMPARE.bigger}` : `${(1 / ratio).toFixed(1)}× ${COMPARE.smaller}`}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {map && comparing && (
+            <>
+              <div aria-hidden className="pointer-events-none absolute top-0 bottom-0 w-0.5 -translate-x-1/2 bg-ink/80 shadow-[0_0_12px_rgb(0_0_0/0.6)]" style={{ left: splitX }} />
+              <div
+                role="slider"
+                tabIndex={0}
+                aria-label={COMPARE.handle}
+                aria-valuemin={5}
+                aria-valuemax={95}
+                aria-valuenow={Math.round(split * 100)}
+                onPointerDown={onSplitDown}
+                onPointerMove={onSplitMove}
+                onKeyDown={onSplitKey}
+                style={{ left: splitX, top: map.height / 2 }}
+                className="absolute z-10 grid size-11 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize touch-none place-items-center rounded-full border-2 border-ink bg-navy-900 text-ink shadow-xl shadow-black/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-accent"
+              >
+                <ChevronsLeftRight className="size-5" aria-hidden />
+              </div>
+              <span
+                aria-hidden
+                className="pointer-events-none absolute bottom-14 -translate-x-[calc(100%+10px)] rounded-full bg-gold px-2.5 py-1 text-[11px] font-bold whitespace-nowrap text-navy-950"
+                style={{ left: splitX }}
+              >
+                {era.period}
+              </span>
+              <span
+                aria-hidden
+                className="pointer-events-none absolute bottom-14 translate-x-[10px] rounded-full bg-sky-accent px-2.5 py-1 text-[11px] font-bold whitespace-nowrap text-navy-950"
+                style={{ left: splitX }}
+              >
+                {COMPARE.today}
+              </span>
+            </>
+          )}
 
           {/* Legend; route kinds double as layer toggles */}
           {map && (
@@ -809,7 +998,7 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
       </section>
 
       <EraStory era={era} story={story} onShowHotspot={showHotspotFromStory} />
-      <EraDetails era={era} detail={detail} map={config} centre={centre} bounds={bounds} />
+      <EraDetails era={era} detail={detail} map={config} />
     </>
   );
 }

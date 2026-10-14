@@ -302,9 +302,6 @@ export function HistoryMap() {
           <span className="font-serif text-base font-semibold text-ink">{MAP_PANEL.title}</span>
           <span className="ml-2 text-xs text-faint">{MAP_PANEL.meta}</span>
         </span>
-        <span className="font-mono text-[11px] tracking-wide text-faint">
-          {MAP_PANEL.coordinates}
-        </span>
       </figcaption>
 
       <div ref={stageRef} className="relative">

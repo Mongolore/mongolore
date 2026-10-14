@@ -1,4 +1,4 @@
-import { ArrowDown, GraduationCap } from "lucide-react";
+import { ArrowRight, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { HERO, SITE_NAME } from "@/data/site";
 import { HistoryMap } from "../map/HistoryMap";
@@ -43,13 +43,13 @@ export function Hero() {
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
-            <a
+            <Link
               href={HERO.primaryCta.href}
               className="group inline-flex items-center gap-2.5 rounded-lg bg-gold px-6 py-3.5 font-semibold text-navy-950 shadow-[inset_0_-2px_0_rgb(0_0_0/0.15)] transition-colors hover:bg-gold-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
             >
               {HERO.primaryCta.label}
-              <ArrowDown className="size-4 transition-transform group-hover:translate-y-0.5" aria-hidden />
-            </a>
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+            </Link>
             <Link
               href="/learn"
               className="group inline-flex items-center gap-2.5 rounded-lg border border-gold/50 bg-gold/10 px-5 py-3.5 font-semibold text-gold-soft transition-colors hover:bg-gold/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
@@ -57,12 +57,6 @@ export function Hero() {
               <GraduationCap className="size-4" aria-hidden />
               {HERO.learnCta}
             </Link>
-            <a
-              href={HERO.secondaryCta.href}
-              className="border-b border-white/30 pb-0.5 font-medium text-ink transition-colors hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-accent"
-            >
-              {HERO.secondaryCta.label}
-            </a>
           </div>
         </Reveal>
 

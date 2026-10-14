@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { CheckCircle2, Flame, Heart, Lock, RotateCcw, Star, Target, Trophy, X, XCircle, Zap } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Flame, Heart, Lock, RotateCcw, Star, Target, Trophy, XCircle, Zap } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ERAS } from "@/data/eras";
@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth";
 import { buildQuestions, findLesson, previousLesson, type Question } from "@/lib/lessons";
 import { levelInfo, useProgress, type AwardResult } from "@/lib/progress";
 import { sfx } from "@/lib/sounds";
+import { LanguageToggle } from "../HeaderActions";
 import { ListenButton } from "../ListenButton";
 import { Confetti } from "./Confetti";
 import { grade, isAnswered, KIND_LABEL, QuestionView, type Answer } from "./QuestionView";
@@ -29,6 +30,30 @@ type Result = {
   maxCombo: number;
   award: AwardResult;
 };
+
+/** Back to the learning path, labelled so it reads as "back" rather than "close". */
+function BackToPath() {
+  return (
+    <Link
+      href="/learn"
+      aria-label="Хичээлийн зам руу буцах"
+      className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-semibold text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline-2 focus-visible:outline-sky-accent"
+    >
+      <ArrowLeft className="size-5" aria-hidden />
+      <span className="hidden sm:inline">Буцах</span>
+    </Link>
+  );
+}
+
+/** Top bar for the screens around a lesson (loading, locked, results): back and language. */
+function ScreenBar() {
+  return (
+    <div className="absolute inset-x-0 top-0 mx-auto flex w-full max-w-3xl items-center justify-between px-5 pt-6 sm:px-8">
+      <BackToPath />
+      <LanguageToggle />
+    </div>
+  );
+}
 
 function starsFor(mistakes: number) {
   return mistakes === 0 ? 3 : mistakes === 1 ? 2 : 1;
@@ -161,13 +186,7 @@ function Attempt({ lessonId, attempt, onRetry }: { lessonId: string; attempt: nu
     <div className="flex min-h-dvh flex-col">
       {/* Top bar: quit, progress, combo, hearts */}
       <div className="mx-auto flex w-full max-w-3xl items-center gap-4 px-5 pt-6 sm:px-8">
-        <Link
-          href="/learn"
-          aria-label="Хичээлээс гарах"
-          className="rounded-full p-1.5 text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline-2 focus-visible:outline-sky-accent"
-        >
-          <X className="size-6" aria-hidden />
-        </Link>
+        <BackToPath />
         <div
           className="relative h-4 flex-1 overflow-hidden rounded-full bg-white/10"
           role="progressbar"
@@ -202,6 +221,7 @@ function Attempt({ lessonId, attempt, onRetry }: { lessonId: string; attempt: nu
           <Heart className="size-5 fill-rose-400 text-rose-400" aria-hidden />
           {hearts}
         </span>
+        <LanguageToggle />
       </div>
 
       {/* Question */}
@@ -319,7 +339,8 @@ function Results({
   const secs = String(result.seconds % 60).padStart(2, "0");
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-xl flex-col items-center justify-center px-5 py-16 text-center">
+    <main className="relative mx-auto flex min-h-dvh max-w-xl flex-col items-center justify-center px-5 py-16 text-center">
+      <ScreenBar />
       {success && <Confetti />}
       <motion.div
         initial={reduce ? false : { scale: 0.6, opacity: 0 }}
@@ -435,13 +456,19 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
   const locked = ready && prev !== undefined && !progress.completed[prev.id];
 
   if (!ready || loading) {
-    return <div className="grid min-h-dvh place-items-center text-muted">Ачаалж байна…</div>;
+    return (
+      <div className="relative grid min-h-dvh place-items-center text-muted">
+        <ScreenBar />
+        Ачаалж байна…
+      </div>
+    );
   }
 
   // Lessons are for signed-in learners (guest mode only when Supabase isn't configured).
   if (configured && !user) {
     return (
-      <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-5 text-center">
+      <main className="relative mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-5 text-center">
+        <ScreenBar />
         <Lock className="size-14 text-faint" aria-hidden />
         <h1 className="mt-4 font-serif text-3xl font-bold text-ink">Нэвтэрч суралцаарай</h1>
         <p className="mt-2 text-muted">Хичээл үзэхийн тулд нэвтэрнэ үү эсвэл бүртгүүлнэ үү.</p>
@@ -470,7 +497,8 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
 
   if (locked) {
     return (
-      <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-5 text-center">
+      <main className="relative mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-5 text-center">
+        <ScreenBar />
         <Lock className="size-14 text-faint" aria-hidden />
         <h1 className="mt-4 font-serif text-3xl font-bold text-ink">Энэ хичээл түгжээтэй</h1>
         <p className="mt-2 text-muted">Өмнөх «{prev.title}» хичээлээ дуусгаад нээгээрэй.</p>
