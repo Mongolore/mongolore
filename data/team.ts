@@ -21,21 +21,21 @@ export const TEAM: TeamMember[] = [
   {
     name: "Халиун",
     nameEn: "Khaliun",
-    role: "Frontend Developer",
+    role: "Fullstack Developer",
     school: "Absolute Elite",
     photo: "/team/khaliun.jpg",
   },
   {
     name: "Энэрэл",
     nameEn: "Enerel",
-    role: "Fullstack Developer",
+    role: "Researcher",
     school: "Australian Smart School of Ulaanbaatar (ASSU)",
     photo: "/team/enerel.jpg",
   },
   {
     name: "Бархас",
     nameEn: "Barkhas",
-    role: "Үүрэг",
+    role: "Researcher",
     school: "130-р сургууль",
     photo: "/team/barkhas.jpg",
   },
@@ -49,7 +49,7 @@ export const TEAM: TeamMember[] = [
   {
     name: "Жэйсон Амгалан",
     nameEn: "Jason Amgalan",
-    role: "Backend Developer",
+    role: "Frontend Developer",
     school: "American School of Ulaanbaatar",
     photo: "/team/amgalan.jpg",
   },
