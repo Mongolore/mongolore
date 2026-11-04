@@ -1,11 +1,11 @@
 import { ArrowRight, GraduationCap } from "lucide-react";
 import Link from "next/link";
-import { HERO, SITE_NAME } from "@/data/site";
+import { HERO, SITE_NAME_PARTS } from "@/data/site";
 import { HistoryMap } from "../map/HistoryMap";
 import { Reveal } from "../Reveal";
 
 export function Hero() {
-  const [first, ...rest] = SITE_NAME.split(" ");
+  const [first, second] = SITE_NAME_PARTS;
   return (
     <section
       aria-labelledby="hero-title"
@@ -25,8 +25,8 @@ export function Hero() {
               className="font-serif text-[4.25rem] leading-[0.9] font-bold tracking-tight text-ink sm:text-8xl xl:text-[6.5rem]"
             >
               {first}
-              <span className="mt-2 block font-sans text-[0.52em] leading-none font-extrabold tracking-[0.18em] text-gold">
-                {rest.join(" ")}
+              <span className="mt-2 block font-sans text-[0.52em] leading-none font-extrabold tracking-[0.18em] text-gold uppercase">
+                {second}
               </span>
             </h1>
             <span

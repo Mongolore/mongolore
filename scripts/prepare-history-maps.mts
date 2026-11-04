@@ -6,7 +6,8 @@
  * For each era it downloads the historical-basemaps snapshot (cached in
  * node_modules/.cache/history-maps), clips it to the era's view, simplifies
  * it for that scale and writes public/data/history/<era id>.geojson with
- * `role`, `label` and `labelAt` properties the map reads directly.
+ * `role`, `label` and `labelAt` properties the map reads directly, plus
+ * today.geojson: today's borders over every era's window, for the swipe.
  *
  * It also writes public/data/history/hydro.geojson: rivers and lakes from
  * Natural Earth (10m rivers around Mongolia, 50m elsewhere).
@@ -14,7 +15,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { geoArea, geoCentroid } from "d3-geo";
-import { ERA_MAPS, type Polity, type ViewWindow } from "../data/historyMaps.ts";
+import { ERA_MAPS, TODAY_ERA, TODAY_FILE, type EraMap, type Polity, type ViewWindow } from "../data/historyMaps.ts";
 import { ERAS } from "../data/eras.ts";
 
 const require = createRequire(import.meta.url);
@@ -133,17 +134,10 @@ function tag(feature: Feature, polity: Polity | undefined) {
 let failed = false;
 mkdirSync(OUT, { recursive: true });
 
-for (const era of ERAS) {
-  const config = ERA_MAPS[era.id];
-  if (!config) {
-    console.error(`✗ ${era.id}: no entry in ERA_MAPS`);
-    failed = true;
-    continue;
-  }
-
+/** Writes public/data/history/<file>.geojson: the era's borders clipped to `window`. */
+async function buildEra(id: string, file: string, config: EraMap, window: ViewWindow, interval: number) {
   const world = await cached(`${BASEMAPS}world_${config.source}.geojson`, `world_${config.source}.geojson`);
-  const clip = bboxOf(clipWindow(config.view));
-  const interval = simplifyInterval(config.view);
+  const clip = bboxOf(window);
   const base = await run(
     `-i src.json -filter-fields NAME -clean -clip bbox=${clip} -simplify interval=${interval} keep-shapes`,
     { "src.json": world },
@@ -196,19 +190,43 @@ for (const era of ERAS) {
 
   for (const name of Object.keys(config.polities)) {
     if (!seen.has(name)) {
-      console.error(`✗ ${era.id}: "${name}" is not in world_${config.source} within the view`);
+      console.error(`✗ ${id}: "${name}" is not in world_${config.source} within the view`);
       failed = true;
     }
   }
   if (config.derive && !seen.has(config.derive.from)) {
-    console.error(`✗ ${era.id}: derive source "${config.derive.from}" not found`);
+    console.error(`✗ ${id}: derive source "${config.derive.from}" not found`);
     failed = true;
   }
 
   const out = JSON.stringify({ type: "FeatureCollection", features: features.filter((f) => f.geometry) });
-  writeFileSync(new URL(`${era.id}.geojson`, OUT), out);
-  console.log(`${era.id.padEnd(16)} world_${config.source.padEnd(6)} ${(out.length / 1024).toFixed(0).padStart(4)} KB`);
+  writeFileSync(new URL(`${file}.geojson`, OUT), out);
+  console.log(`${file.padEnd(16)} world_${config.source.padEnd(6)} ${(out.length / 1024).toFixed(0).padStart(4)} KB`);
 }
+
+for (const era of ERAS) {
+  const config = ERA_MAPS[era.id];
+  if (!config) {
+    console.error(`✗ ${era.id}: no entry in ERA_MAPS`);
+    failed = true;
+    continue;
+  }
+  await buildEra(era.id, era.id, config, clipWindow(config.view), simplifyInterval(config.view));
+}
+
+// ---- Today's borders for the "then vs today" swipe ----
+// The swipe draws them in whichever era's frame is open, so they must reach
+// as far as every era's clip window, not just today's own. Simplified at the
+// finest scale any comparable era uses, so close-up eras stay crisp.
+const comparable = Object.entries(ERA_MAPS).filter(([id]) => id !== TODAY_ERA).map(([, m]) => m.view);
+const windows = comparable.map(clipWindow);
+const todayWindow: ViewWindow = {
+  west: Math.min(...windows.map((w) => w.west)),
+  south: Math.min(...windows.map((w) => w.south)),
+  east: Math.max(...windows.map((w) => w.east)),
+  north: Math.max(...windows.map((w) => w.north)),
+};
+await buildEra(TODAY_ERA, TODAY_FILE, ERA_MAPS[TODAY_ERA], todayWindow, Math.min(...comparable.map(simplifyInterval)));
 
 // ---- Rivers and lakes ----
 const [rivers50, rivers10, lakes50] = await Promise.all([

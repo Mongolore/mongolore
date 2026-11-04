@@ -1,5 +1,7 @@
 /** Page copy and navigation for the landing page. */
-export const SITE_NAME = "ТҮҮХ MAP";
+export const SITE_NAME = "MongoLore";
+/** The brand split for styling: "Mongo" in ink, "Lore" in gold. */
+export const SITE_NAME_PARTS = ["Mongo", "Lore"] as const;
 export const SITE_YEAR = 2026;
 
 export const NAV_LINKS = [

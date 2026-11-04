@@ -21,7 +21,7 @@ export const TEAM: TeamMember[] = [
   {
     name: "Халиун",
     nameEn: "Khaliun",
-    role: "Fullstack Developer",
+    role: "Full-Stack and Lead Developer",
     school: "Absolute Elite",
     photo: "/team/khaliun.jpg",
   },

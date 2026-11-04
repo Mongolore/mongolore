@@ -35,7 +35,7 @@ export function Navbar() {
         <a
           href="#top"
           className="flex items-center rounded text-lg text-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-accent"
-          aria-label="ТҮҮХ MAP — нүүр хуудас"
+          aria-label="MongoLore — нүүр хуудас"
         >
           <Logo />
         </a>

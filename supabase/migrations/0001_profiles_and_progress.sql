@@ -1,4 +1,4 @@
--- ТҮҮХ MAP — learner accounts and progress.
+-- MongoLore — learner accounts and progress.
 --
 -- Run once: Supabase dashboard → SQL Editor → New query → paste this whole
 -- file → Run. Safe to run again; it only creates what's missing.

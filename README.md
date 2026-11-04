@@ -1,4 +1,4 @@
-# ТҮҮХ MAP
+# MongoLore
 
 Монголын түүхийг интерактив газрын зургаар үзүүлэх веб платформын нүүр хуудас.
 Next.js (App Router), TypeScript, Tailwind CSS дээр бүтээв.

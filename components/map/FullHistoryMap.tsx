@@ -28,6 +28,8 @@ import {
   HISTORY_SOURCE,
   HYDRO_SOURCE,
   LANDFORMS,
+  TODAY_ERA,
+  TODAY_FILE,
   type EraMap,
   type LonLat,
   type PlaceKind,
@@ -54,8 +56,6 @@ const HEADER_HEIGHT = 64;
 /** Landforms crowd the Mongolian plateau on continent-wide views. */
 const LANDFORM_MAX_SPAN = 100;
 const EARTH_RADIUS_KM = 6371;
-/** The era drawn as "today" when comparing. */
-const TODAY_ID = "democracy";
 const TODAY_LABEL_AT: LonLat = [103.5, 46.6];
 
 const km2 = (steradians: number) => steradians * EARTH_RADIUS_KM ** 2;
@@ -230,9 +230,10 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
   const mapId = loaded[era.id] ? era.id : shownId;
   const mapConfig = ERA_MAPS[mapId];
   const data = loaded[mapId];
-  const canCompare = era.id !== TODAY_ID;
+  const canCompare = era.id !== TODAY_ERA;
   const comparing = compare && canCompare;
-  const today = loaded[TODAY_ID];
+  // Its own file, clipped wider than the era's, so it fills any era's frame.
+  const today = loaded[TODAY_FILE];
 
   useEffect(() => {
     load(era.id);
@@ -241,7 +242,7 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
   }, [era.id, eraIndex, load]);
 
   useEffect(() => {
-    if (compare) load(TODAY_ID);
+    if (compare) load(TODAY_FILE);
   }, [compare, load]);
 
   useEffect(() => {
@@ -276,7 +277,7 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
     const todayOutline = outline ? (path(outline) ?? "") : "";
 
     // Today's borders in the same projection, for the comparison swipe.
-    const todayMap = ERA_MAPS[TODAY_ID];
+    const todayMap = ERA_MAPS[TODAY_ERA];
     const todayPolities = (today?.features ?? []).map((f, i) => ({
       key: `today-${i}`,
       role: f.properties.role,

@@ -125,6 +125,14 @@ export const LANDFORMS: Landform[] = [
   { label: "Байгал нуур", kind: "lake", at: [110.2, 54.3] },
 ];
 
+/** The era drawn as "today" in the "then vs today" swipe. */
+export const TODAY_ERA = "democracy";
+/**
+ * public/data/history/<TODAY_FILE>.geojson: TODAY_ERA's borders clipped to
+ * cover every era's view, so the swipe lines up in any era's frame.
+ */
+export const TODAY_FILE = "today";
+
 /** Keyed by `Era.id`. `npm run check:data` checks every era has an entry. */
 export const ERA_MAPS: Record<string, EraMap> = {
   khunnu: {

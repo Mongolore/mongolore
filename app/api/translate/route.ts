@@ -89,7 +89,7 @@ async function googleBatch(texts: string[]): Promise<string[]> {
 
 /* ---------------- Claude (optional, better names and tone) ---------------- */
 
-const SYSTEM = `You translate text from ТҮҮХ MAP, a website teaching Mongolian history to teenagers, from Mongolian (Cyrillic) into natural, friendly English.
+const SYSTEM = `You translate text from MongoLore, a website teaching Mongolian history to teenagers, from Mongolian (Cyrillic) into natural, friendly English.
 
 Rules:
 - You receive a JSON array of strings, which are UI labels, headings, or history passages. Return exactly one translation per string, in the same order.

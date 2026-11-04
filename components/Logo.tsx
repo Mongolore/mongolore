@@ -1,7 +1,7 @@
-import { SITE_NAME } from "@/data/site";
+import { SITE_NAME_PARTS } from "@/data/site";
 
 export function Logo({ className = "" }: { className?: string }) {
-  const [first, ...rest] = SITE_NAME.split(" ");
+  const [first, second] = SITE_NAME_PARTS;
   return (
     <span data-no-translate className={`inline-flex items-center gap-2.5 ${className}`}>
       <svg viewBox="0 0 28 28" className="size-7 shrink-0" aria-hidden>
@@ -18,9 +18,7 @@ export function Logo({ className = "" }: { className?: string }) {
       </svg>
       <span className="font-serif text-[1.15em] font-bold tracking-tight">
         {first}
-        <span className="ml-1.5 font-sans text-[0.72em] font-semibold tracking-[0.2em] text-gold">
-          {rest.join(" ")}
-        </span>
+        <span className="text-gold">{second}</span>
       </span>
     </span>
   );

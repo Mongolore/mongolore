@@ -26,7 +26,7 @@ type LanguageContextValue = {
 };
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
-const langStore = storedValue("mongolore:lang", "mn");
+const langStore = storedValue("mongolore:lang", "en");
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const lang = useSyncExternalStore(langStore.subscribe, langStore.get, langStore.getServer) as Lang;

@@ -22,19 +22,19 @@ const mongolScript = Noto_Sans_Mongolian({
   preload: false,
 });
 
-const title = "ТҮҮХ MAP — Монголын интерактив түүхэн газрын зураг";
+const title = "MongoLore — Монголын интерактив түүхэн газрын зураг";
 const description =
   "Одоо үеийн залууст зориулсан Монголын интерактив түүхэн газрын зургийн веб платформ. Аймаг бүрийн түүх, дурсгалт газар, түүхэн хүмүүсийг газрын зураг дээрээс судлаарай.";
 
 export const metadata: Metadata = {
   title,
   description,
-  applicationName: "ТҮҮХ MAP",
-  keywords: ["Монголын түүх", "газрын зураг", "аймаг", "боловсрол", "ТҮҮХ MAP"],
+  applicationName: "MongoLore",
+  keywords: ["Монголын түүх", "газрын зураг", "аймаг", "боловсрол", "MongoLore"],
   openGraph: {
     type: "website",
     locale: "mn_MN",
-    siteName: "ТҮҮХ MAP",
+    siteName: "MongoLore",
     title,
     description,
   },
