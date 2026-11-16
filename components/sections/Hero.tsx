@@ -28,11 +28,7 @@ export function Hero() {
 
       <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)] gap-10 px-5 sm:px-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] lg:items-center lg:gap-12">
         <Reveal>
-          <p className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-semibold tracking-[0.16em] text-gold-soft uppercase">
-            <span aria-hidden className="size-1.5 animate-pulse rounded-full bg-gold" />
-            {HERO.eyebrow}
-          </p>
-          <div className="mt-6 flex items-start gap-5">
+          <div className="flex items-start gap-5">
             <h1
               id="hero-title"
               data-no-translate
