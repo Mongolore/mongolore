@@ -1,17 +1,19 @@
 "use client";
 
-import { CalendarCheck, Sparkles } from "lucide-react";
+import { CalendarCheck, Lightbulb, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { dailyQuestion } from "@/lib/lessons";
+import { useMistakes } from "@/lib/mistakes";
 import { dayKey, useProgress } from "@/lib/progress";
 import { sfx } from "@/lib/sounds";
-import { grade, QuestionView, type Answer } from "./QuestionView";
+import { answerLabel, grade, QuestionView, type Answer } from "./QuestionView";
 
 const DAILY_XP = 15;
 
 /** One question a day for bonus XP — a reason to come back tomorrow. */
 export function DailyQuestion() {
   const { award, hasClaimed, ready } = useProgress();
+  const { record } = useMistakes();
   const [day] = useState(() => dayKey());
   const question = useMemo(() => dailyQuestion(day), [day]);
   const [answer, setAnswer] = useState<Answer>(null);
@@ -29,8 +31,9 @@ export function DailyQuestion() {
       award({ xp: DAILY_XP, claim: claimKey });
     } else {
       sfx.wrong();
-      // A wrong answer still uses up today's question.
+      // A wrong answer still uses up today's question — and goes into the notebook to revise.
       award({ xp: 0, claim: claimKey });
+      record(question, answerLabel(question, a));
     }
   };
 
@@ -62,7 +65,13 @@ export function DailyQuestion() {
           </div>
           {checked && (
             <p className={`mt-4 text-sm font-semibold ${right ? "text-emerald-200" : "text-rose-200"}`} aria-live="polite">
-              {right ? `Зөв! +${DAILY_XP} XP` : "Энэ удаад болсонгүй — маргааш дахин оролдоорой!"}
+              {right ? `Зөв! +${DAILY_XP} XP` : "Энэ удаад болсонгүй — алдааны дэвтэрт хадгаллаа, давтаад засаарай."}
+            </p>
+          )}
+          {checked && question.explain && (
+            <p className="mt-2 flex gap-2 rounded-xl bg-black/20 px-3 py-2 text-sm leading-relaxed whitespace-pre-line text-ink/85">
+              <Lightbulb className="mt-0.5 size-4 shrink-0 text-gold-soft" aria-hidden />
+              <span>{question.explain}</span>
             </p>
           )}
         </>

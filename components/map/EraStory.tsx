@@ -1,10 +1,10 @@
 "use client";
 
-import { Check, Compass, Crown, MapPin, RotateCcw, Swords, X } from "lucide-react";
+import { Check, Clapperboard, Compass, Crown, MapPin, RotateCcw, Swords, X } from "lucide-react";
 import { useState } from "react";
 import type { Era } from "@/data/eras";
 import type { EraStory as Story } from "@/data/eraStories";
-import { STORY } from "@/data/site";
+import { SCENE, STORY } from "@/data/site";
 import { useProgress } from "@/lib/progress";
 import { sfx } from "@/lib/sounds";
 import { ListenButton } from "../ListenButton";
@@ -16,6 +16,8 @@ type EraStoryProps = {
   story: Story;
   /** Opens hotspot `index` on the map and scrolls the map into view. */
   onShowHotspot: (index: number) => void;
+  /** Plays hotspot `index` as a full-screen scene. */
+  onPlayScene: (index: number) => void;
 };
 
 const FACT_ICONS = { leaders: Crown, size: Compass, goal: Swords } as const;
@@ -101,7 +103,7 @@ function Quiz({ eraId, quiz }: { eraId: string; quiz: Story["quiz"] }) {
 }
 
 /** The story layer under the map: hook, fast facts, hotspot cards, then vs now and a quiz. */
-export function EraStory({ era, story, onShowHotspot }: EraStoryProps) {
+export function EraStory({ era, story, onShowHotspot, onPlayScene }: EraStoryProps) {
   return (
     <div id="details" className="mx-auto max-w-7xl scroll-mt-20 px-5 pt-12 sm:px-8 lg:pt-16">
       <header id="story-hook" className="max-w-3xl">
@@ -161,7 +163,15 @@ export function EraStory({ era, story, onShowHotspot }: EraStoryProps) {
                 <h4 className="mt-3 font-serif text-lg leading-snug font-semibold text-ink">{hotspot.title}</h4>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{hotspot.text}</p>
               </div>
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => onPlayScene(i)}
+                className="scene-cta group mt-4 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-navy-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+              >
+                <Clapperboard className="size-4" aria-hidden />
+                {SCENE.enter}
+              </button>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                 <button
                   type="button"
                   onClick={() => onShowHotspot(i)}

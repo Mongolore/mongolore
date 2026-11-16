@@ -1,4 +1,4 @@
-import { ArrowRight, Flame, Heart, Trophy, Zap } from "lucide-react";
+import { ArrowRight, BookOpen, Flame, NotebookPen, Trophy } from "lucide-react";
 import Link from "next/link";
 import { DailyQuestion } from "../learn/DailyQuestion";
 import { StatsPanel } from "../learn/StatsPanel";
@@ -6,9 +6,9 @@ import { Reveal } from "../Reveal";
 import { SectionHeading } from "./SectionHeading";
 
 const PERKS = [
-  { icon: Zap, title: "XP цуглуул", text: "Зөв хариулт бүр 10 XP, 3 дараалан зөв бол урамшуулал.", tone: "text-gold-soft" },
+  { icon: BookOpen, title: "Эхлээд уншиж, хар", text: "Хичээл бүр дүр зураг, газрын зураг, он дарааллын карттай — дараа нь шалгана.", tone: "text-gold-soft" },
   { icon: Flame, title: "Цуваагаа бүү тасал", text: "Өдөр бүр ядаж нэг хичээл — цуваа чинь өснө.", tone: "text-orange-300" },
-  { icon: Heart, title: "3 амь", text: "Буруу хариулт бүр нэг амь. Алдсан асуулт сүүлд дахин гарна.", tone: "text-rose-300" },
+  { icon: NotebookPen, title: "Алдааны дэвтэр", text: "Алдсан асуулт бүр зөв хариулт, тайлбартайгаа хадгалагдана — давтаад зас.", tone: "text-rose-300" },
   { icon: Trophy, title: "Шинэ аянчнаас Их хаан хүртэл", text: "XP-ээр түвшин ахиж, шинэ цол авна.", tone: "text-sky-soft" },
 ];
 

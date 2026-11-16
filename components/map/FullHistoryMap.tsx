@@ -9,7 +9,7 @@ import {
   type GeoPermissibleObjects,
   type GeoProjection,
 } from "d3-geo";
-import { ChevronLeft, ChevronRight, ChevronsLeftRight, Columns2, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeftRight, Clapperboard, Columns2, X } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -37,9 +37,10 @@ import {
   type RouteKind,
   type ViewWindow,
 } from "@/data/historyMaps";
-import { COMPARE, FULL_MAP, STORY } from "@/data/site";
+import { COMPARE, FULL_MAP, SCENE, STORY } from "@/data/site";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import { ListenButton } from "../ListenButton";
+import { SceneExperience } from "../scene/SceneExperience";
 import { EraDetails } from "./EraDetails";
 import { EraStory } from "./EraStory";
 import { EraTimeline } from "./EraTimeline";
@@ -211,6 +212,8 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
   // The open hotspot card, remembered per era so switching eras closes it.
   const [openHotspot, setOpenHotspot] = useState<{ era: string; index: number } | null>(null);
   const hotspotRefs = useRef<(SVGGElement | null)[]>([]);
+  /** The hotspot whose full-screen scene is playing; independent of the card, so it also opens from the story list. */
+  const [scene, setScene] = useState<{ era: string; index: number } | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
@@ -454,6 +457,10 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
   const openIndex = openHotspot?.era === mapId ? openHotspot.index : null;
   const openCard = openIndex !== null ? map?.hotspots.find((h) => h.i === openIndex) : undefined;
   const hotspotCount = story.hotspots.length;
+
+  const sceneEra = scene ? ERAS.find((e) => e.id === scene.era) : undefined;
+  const sceneCount = scene ? (ERA_STORIES[scene.era]?.hotspots.length ?? 0) : 0;
+  const sceneHotspot = scene ? ERA_STORIES[scene.era]?.hotspots[scene.index] : undefined;
 
   const closeHotspot = useCallback(() => {
     const index = openHotspot?.index;
@@ -959,6 +966,21 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
                   <X className="size-4" aria-hidden />
                 </button>
               </div>
+              {/* First thing in the card, so it is never pushed out of view by long text. */}
+              <button
+                type="button"
+                onClick={() => setScene({ era: mapId, index: openCard.i })}
+                className="scene-cta group mt-3 flex w-full items-center gap-3 rounded-xl p-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+              >
+                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-navy-950/25 text-navy-950">
+                  <Clapperboard className="size-4.5" aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm leading-tight font-bold text-navy-950">{SCENE.enter}</span>
+                  <span className="block text-[11px] text-navy-950/70">{SCENE.enterHint}</span>
+                </span>
+                <ChevronRight className="size-4 text-navy-950 transition-transform group-hover:translate-x-1" aria-hidden />
+              </button>
               <div id="hotspot-card-text">
                 <h2 id="hotspot-card-title" className="mt-2 font-serif text-lg leading-snug font-semibold text-ink">
                   {openCard.title}
@@ -998,7 +1020,21 @@ export function FullHistoryMap({ initialIndex }: { initialIndex: number }) {
         </div>
       </section>
 
-      <EraStory era={era} story={story} onShowHotspot={showHotspotFromStory} />
+      {sceneHotspot && scene && (
+        <SceneExperience
+          key={`${scene.era}-${scene.index}`}
+          eraId={scene.era}
+          eraName={sceneEra?.name ?? era.name}
+          period={sceneEra?.period ?? era.period}
+          hotspot={sceneHotspot}
+          index={scene.index}
+          count={sceneCount}
+          onClose={() => setScene(null)}
+          onNext={() => setScene({ era: scene.era, index: (scene.index + 1) % sceneCount })}
+        />
+      )}
+
+      <EraStory era={era} story={story} onShowHotspot={showHotspotFromStory} onPlayScene={(index) => setScene({ era: era.id, index })} />
       <EraDetails era={era} detail={detail} map={config} />
     </>
   );

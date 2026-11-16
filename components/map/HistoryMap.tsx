@@ -20,8 +20,10 @@ import {
   MAP_HISTORICAL_DATA,
 } from "@/data/aimagInfo";
 import { ERAS } from "@/data/eras";
+import { ERA_MAPS } from "@/data/historyMaps";
 import { NEIGHBOURS, type NeighbourCode } from "@/data/neighbours";
 import { FULL_MAP, MAP_PANEL } from "@/data/site";
+import { useEraGeo, useEraIndex } from "@/lib/era";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import { ListenButton } from "../ListenButton";
 import { EraTimeline } from "./EraTimeline";
@@ -76,7 +78,7 @@ export function HistoryMap() {
   const [neighbours, setNeighbours] = useState<Collection<NeighbourProps> | null>(null);
   const [outline, setOutline] = useState<GeoPermissibleObjects | null>(null);
   const [failed, setFailed] = useState(false);
-  const [eraIndex, setEraIndex] = useState(ERAS.length - 1);
+  const [eraIndex, setEraIndex] = useEraIndex();
   const [hovered, setHovered] = useState<Pointer | null>(null);
   const [focused, setFocused] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -114,10 +116,9 @@ export function HistoryMap() {
 
   const map = useMemo(() => {
     if (!aimags) return null;
-    const projection = geoMercator().fitExtent(
-      EXTENT,
-      viewWindow(isCompact ? VIEW_WINDOWS.compact : VIEW_WINDOWS.wide),
-    );
+    const projection = geoMercator()
+      .fitExtent(EXTENT, viewWindow(isCompact ? VIEW_WINDOWS.compact : VIEW_WINDOWS.wide))
+      .clipExtent([[-20, -20], [WIDTH + 20, HEIGHT + 20]]);
     const path = geoPath(projection);
 
     const regions: ShapedRegion[] = [];
@@ -174,6 +175,27 @@ export function HistoryMap() {
   }, [aimags, isCompact, neighbours, outline]);
 
   const era = ERAS[eraIndex];
+  const eraGeo = useEraGeo(era.id);
+
+  // The era's own borders, drawn under today's aimags so the map reshapes with the timeline.
+  const polities = useMemo(() => {
+    if (!map || !eraGeo) return null;
+    const path = geoPath(map.projection);
+    const order = ["land", "other", "ruler", "ally", "realm"];
+    const shapes = eraGeo.features
+      .map((f, i) => ({ key: `${f.properties.name}-${i}`, role: f.properties.role, d: path(f.geometry) ?? "" }))
+      .filter((s) => s.d)
+      .sort((a, b) => order.indexOf(a.role) - order.indexOf(b.role));
+    const labels = eraGeo.features.flatMap((f, i) => {
+      const { role, label, labelAt } = f.properties;
+      if (!label || !labelAt || role === "land") return [];
+      const p = map.projection(labelAt);
+      if (!p || p[0] < 50 || p[0] > WIDTH - 50 || p[1] < 30 || p[1] > HEIGHT - 44) return [];
+      return [{ key: `${label}-${i}`, role, label, x: p[0], y: p[1] }];
+    });
+    return { shapes, labels };
+  }, [eraGeo, map]);
+  const hasRealm = !ERA_MAPS[era.id]?.modernRealm;
 
   const eraSites = useMemo(() => {
     if (!map) return [];
@@ -296,7 +318,7 @@ export function HistoryMap() {
   );
 
   return (
-    <figure className="overflow-hidden rounded-[18px] border border-white/10 bg-navy-950/50 shadow-[0_30px_80px_-40px_rgb(0_0_0/0.8)]">
+    <figure className="glass overflow-hidden rounded-[22px] shadow-[0_40px_100px_-40px_rgb(0_0_0/0.9)]">
       <figcaption className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-white/10 px-4 py-3 sm:px-5">
         <span>
           <span className="font-serif text-base font-semibold text-ink">{MAP_PANEL.title}</span>
@@ -315,6 +337,10 @@ export function HistoryMap() {
           }}
         >
           <defs>
+            <pattern id="ally-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="6" height="6" fill="#1f2d50" />
+              <line x1="0" y1="0" x2="0" y2="6" stroke="#E8B04B" strokeOpacity="0.5" strokeWidth="1.6" />
+            </pattern>
             <radialGradient id="map-sea" cx="52%" cy="45%" r="62%">
               <stop offset="0%" stopColor="#4FA3E0" stopOpacity="0.12" />
               <stop offset="100%" stopColor="#4FA3E0" stopOpacity="0" />
@@ -331,8 +357,15 @@ export function HistoryMap() {
 
           <rect width={WIDTH} height={HEIGHT} fill="url(#map-sea)" pointerEvents="none" />
 
-          {/* Neighbouring countries, for geographic context */}
-          <g aria-hidden pointerEvents="none">
+          {/* The selected era's borders; today's neighbours until they load */}
+          {polities && (
+            <g key={era.id} aria-hidden pointerEvents="none" className="era-fade">
+              {polities.shapes.map((shape) => (
+                <path key={shape.key} d={shape.d} className="polity" data-role={shape.role} />
+              ))}
+            </g>
+          )}
+          <g aria-hidden pointerEvents="none" className={polities ? "hidden" : undefined}>
             {map?.countries.map((country) => (
               <path
                 key={country.code}
@@ -359,7 +392,7 @@ export function HistoryMap() {
               aria-hidden
               pointerEvents="none"
               d={map.outlinePath}
-              fill="#16213e"
+              fill={polities && hasRealm ? "none" : "#16213e"}
               stroke="rgb(140 198 239 / 0.45)"
               strokeWidth={1.6}
               strokeLinejoin="round"
@@ -390,7 +423,7 @@ export function HistoryMap() {
             </text>
           )}
 
-          <g onPointerLeave={() => setHovered(null)}>
+          <g onPointerLeave={() => setHovered(null)} data-over-realm={!!polities && hasRealm}>
             {map?.regions.map((region, i) => (
               <path
                 key={region.iso}
@@ -435,6 +468,16 @@ export function HistoryMap() {
               );
             })}
           </g>
+
+          {polities && (
+            <g key={`labels-${era.id}`} aria-hidden pointerEvents="none" className="era-fade hidden sm:block">
+              {polities.labels.map((l) => (
+                <text key={l.key} x={l.x} y={l.y} textAnchor="middle" className={`map-label polity-label polity-label-${l.role}`}>
+                  {l.label}
+                </text>
+              ))}
+            </g>
+          )}
 
           {/* Sites of the selected era */}
           <g aria-hidden className="pointer-events-none">
@@ -550,6 +593,10 @@ export function HistoryMap() {
           ) : (
             <div className="flex h-full flex-col justify-between gap-3">
               <ul className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-muted">
+                <li className="flex items-center gap-2">
+                  <span aria-hidden className="h-2.5 w-4 rounded-[3px] border border-gold bg-[#4d3b1d]" />
+                  {MAP_PANEL.legend.realm}
+                </li>
                 <li className="flex items-center gap-2">
                   <span aria-hidden className="h-2.5 w-4 rounded-[3px] bg-[#2b5a80]" />
                   {MAP_PANEL.legend.era}

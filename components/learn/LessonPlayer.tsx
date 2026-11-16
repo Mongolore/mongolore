@@ -1,345 +1,119 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Flame, Heart, Lock, RotateCcw, Star, Target, Trophy, XCircle, Zap } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowRight, BookOpen, Flame, Heart, Lock, NotebookPen, RotateCcw, Star, Target, Trophy, Zap } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ERAS } from "@/data/eras";
 import { useAuth } from "@/lib/auth";
-import { buildQuestions, findLesson, previousLesson, type Question } from "@/lib/lessons";
+import { buildQuestions, buildStudy, findLesson, LESSONS, previousLesson, type Lesson, type Question } from "@/lib/lessons";
+import { useMistakes } from "@/lib/mistakes";
 import { levelInfo, useProgress, type AwardResult } from "@/lib/progress";
 import { sfx } from "@/lib/sounds";
-import { LanguageToggle } from "../HeaderActions";
-import { ListenButton } from "../ListenButton";
+import { LearnBackdrop, ScreenBar } from "./chrome";
 import { Confetti } from "./Confetti";
-import { grade, isAnswered, KIND_LABEL, QuestionView, type Answer } from "./QuestionView";
+import { MistakeList } from "./MistakeList";
+import { QuizSession, type SessionSummary } from "./QuizSession";
+import { ReviewSession } from "./ReviewSession";
+import { StudyDeck } from "./StudyDeck";
 
-const HEARTS = 3;
 const XP_PER_CORRECT = 10;
-const COMBO_EVERY = 3;
-const COMBO_BONUS = 5;
 const PERFECT_BONUS = 20;
 
-type Phase = "answering" | "checked" | "done" | "failed";
-
-type Result = {
-  xp: number;
-  stars: number;
-  accuracy: number;
-  seconds: number;
-  maxCombo: number;
-  award: AwardResult;
-};
-
-/** Back to the learning path, labelled so it reads as "back" rather than "close". */
-function BackToPath() {
-  return (
-    <Link
-      href="/learn"
-      aria-label="Хичээлийн зам руу буцах"
-      className="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-semibold text-muted transition hover:bg-white/10 hover:text-ink focus-visible:outline-2 focus-visible:outline-sky-accent"
-    >
-      <ArrowLeft className="size-5" aria-hidden />
-      <span className="hidden sm:inline">Буцах</span>
-    </Link>
-  );
-}
-
-/** Top bar for the screens around a lesson (loading, locked, results): back and language. */
-function ScreenBar() {
-  return (
-    <div className="absolute inset-x-0 top-0 mx-auto flex w-full max-w-3xl items-center justify-between px-5 pt-6 sm:px-8">
-      <BackToPath />
-      <LanguageToggle />
-    </div>
-  );
-}
+type Result = SessionSummary & { stars: number; gained: number; award: AwardResult };
 
 function starsFor(mistakes: number) {
   return mistakes === 0 ? 3 : mistakes === 1 ? 2 : 1;
 }
 
-function Attempt({ lessonId, attempt, onRetry }: { lessonId: string; attempt: number; onRetry: () => void }) {
-  const lesson = findLesson(lessonId)!;
+/**
+ * One run through a lesson: read the study cards, answer the questions, then
+ * look over what went wrong — and fix it on the spot.
+ */
+function Attempt({ lesson, attempt, skipStudy, onRetry }: { lesson: Lesson; attempt: number; skipStudy: boolean; onRetry: (study: boolean) => void }) {
   const era = ERAS.find((e) => e.id === lesson.eraId)!;
   const { award } = useProgress();
-  const reduce = useReducedMotion();
-
-  const [queue, setQueue] = useState<Question[]>(() => buildQuestions(lessonId, attempt));
-  const total = useMemo(() => buildQuestions(lessonId, attempt).length, [lessonId, attempt]);
-  const [index, setIndex] = useState(0);
-  const [answer, setAnswer] = useState<Answer>(null);
-  const [phase, setPhase] = useState<Phase>("answering");
-  const [hearts, setHearts] = useState(HEARTS);
-  const [solved, setSolved] = useState(0);
-  const [mistakes, setMistakes] = useState(0);
-  const [combo, setCombo] = useState(0);
-  const [maxCombo, setMaxCombo] = useState(0);
-  const [xp, setXp] = useState(0);
-  const [lastCorrect, setLastCorrect] = useState(false);
-  const [lastGain, setLastGain] = useState(0);
-  const [startedAt] = useState(() => Date.now());
+  const { record } = useMistakes();
+  const cards = useMemo(() => buildStudy(lesson.id), [lesson.id]);
+  const questions = useMemo(() => buildQuestions(lesson.id, attempt), [lesson.id, attempt]);
+  const [phase, setPhase] = useState<"study" | "quiz" | "results" | "fix">(skipStudy ? "quiz" : "study");
   const [result, setResult] = useState<Result | null>(null);
 
-  const question = queue[index];
-
-  const finish = useCallback(
-    (success: boolean, finalXp: number, finalMistakes: number, finalMaxCombo: number) => {
-      const stars = starsFor(finalMistakes);
-      const bonus = success && finalMistakes === 0 ? PERFECT_BONUS : 0;
-      const gained = finalXp + bonus;
-      const awarded = award({ xp: gained, lesson: success ? { id: lessonId, stars } : undefined });
-      const answeredCount = solved + finalMistakes;
-      setResult({
-        xp: gained,
-        stars,
-        accuracy: Math.round((solved / Math.max(answeredCount, 1)) * 100),
-        seconds: Math.round((Date.now() - startedAt) / 1000),
-        maxCombo: finalMaxCombo,
-        award: awarded,
-      });
-      setPhase(success ? "done" : "failed");
-      if (success) (awarded.leveledUp ? sfx.levelUp : sfx.complete)();
+  const onAnswered = useCallback(
+    (question: Question, right: boolean, given: string) => {
+      if (!right) record(question, given);
     },
-    [award, lessonId, solved, startedAt],
+    [record],
   );
 
-  const check = useCallback(() => {
-    if (phase !== "answering" || !isAnswered(question, answer)) return;
-    const right = grade(question, answer);
-    setLastCorrect(right);
-    setPhase("checked");
-    if (right) {
-      sfx.correct();
-      const nextCombo = combo + 1;
-      const gain = XP_PER_CORRECT + (nextCombo % COMBO_EVERY === 0 ? COMBO_BONUS : 0);
-      setCombo(nextCombo);
-      setMaxCombo(Math.max(maxCombo, nextCombo));
-      setXp(xp + gain);
-      setLastGain(gain);
-      setSolved(solved + 1);
-    } else {
-      sfx.wrong();
-      setCombo(0);
-      setHearts(hearts - 1);
-      setMistakes(mistakes + 1);
-      setLastGain(0);
-      // Missed questions come back at the end, Duolingo-style.
-      setQueue([...queue, question]);
-    }
-  }, [answer, combo, hearts, maxCombo, mistakes, phase, question, queue, solved, xp]);
+  const onFinish = useCallback(
+    (summary: SessionSummary) => {
+      const stars = starsFor(summary.missed.length);
+      const gained = summary.xp + (summary.success && summary.missed.length === 0 ? PERFECT_BONUS : 0);
+      const awarded = award({ xp: gained, lesson: summary.success ? { id: lesson.id, stars } : undefined });
+      setResult({ ...summary, stars, gained, award: awarded });
+      setPhase("results");
+      if (summary.success) (awarded.leveledUp ? sfx.levelUp : sfx.complete)();
+    },
+    [award, lesson.id],
+  );
 
-  const next = useCallback(() => {
-    if (phase !== "checked") return;
-    if (hearts <= 0) return finish(false, xp, mistakes, maxCombo);
-    if (index + 1 >= queue.length) return finish(true, xp, mistakes, maxCombo);
-    setIndex(index + 1);
-    setAnswer(null);
-    setPhase("answering");
-  }, [finish, hearts, index, maxCombo, mistakes, phase, queue.length, xp]);
-
-  // Keyboard: 1–4 pick an option, Enter checks / continues.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key === "Enter") {
-        e.preventDefault();
-        if (phase === "answering") check();
-        else if (phase === "checked") next();
-        return;
-      }
-      if (phase !== "answering" || !question) return;
-      const n = Number(e.key);
-      if (question.kind === "choice" && n >= 1 && n <= question.options.length) {
-        sfx.tap();
-        setAnswer(n - 1);
-      } else if (question.kind === "truefalse" && (n === 1 || n === 2)) {
-        sfx.tap();
-        setAnswer(n === 1);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [check, next, phase, question]);
-
-  if (result) {
-    return <Results lessonTitle={lesson.title} eraName={era.name} success={phase === "done"} result={result} onRetry={onRetry} />;
+  if (phase === "study") {
+    return <StudyDeck cards={cards} heading={`${era.name} · ${lesson.title}`} onDone={() => setPhase("quiz")} />;
   }
-
-  const percent = Math.round((solved / total) * 100);
-  const explain =
-    question.kind === "choice" && lastCorrect && question.praise
-      ? question.praise
-      : question.kind === "choice" || question.kind === "truefalse"
-        ? question.explain
-        : undefined;
-  const correctText =
-    question.kind === "choice"
-      ? question.options[question.answer]
-      : question.kind === "truefalse"
-        ? question.answer
-          ? "Үнэн"
-          : "Худал"
-        : undefined;
-
-  return (
-    <div className="flex min-h-dvh flex-col">
-      {/* Top bar: quit, progress, combo, hearts */}
-      <div className="mx-auto flex w-full max-w-3xl items-center gap-4 px-5 pt-6 sm:px-8">
-        <BackToPath />
-        <div
-          className="relative h-4 flex-1 overflow-hidden rounded-full bg-white/10"
-          role="progressbar"
-          aria-valuenow={percent}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label="Хичээлийн явц"
-        >
-          <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-gold to-gold-soft"
-            initial={{ width: "0%" }}
-            animate={{ width: `${percent}%` }}
-            transition={{ type: "spring", stiffness: 140, damping: 20 }}
-          />
-          <span className="absolute inset-x-2 top-1 h-1 rounded-full bg-white/25" />
-        </div>
-        <AnimatePresence>
-          {combo >= 2 && (
-            <motion.span
-              key={combo}
-              initial={reduce ? false : { scale: 0.4, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex items-center gap-1 text-sm font-bold text-orange-300"
-            >
-              <Flame className="size-4 fill-orange-400/70" aria-hidden />
-              {combo}x
-            </motion.span>
-          )}
-        </AnimatePresence>
-        <span className="flex items-center gap-1 font-bold text-rose-300" aria-label={`${hearts} амь үлдсэн`}>
-          <Heart className="size-5 fill-rose-400 text-rose-400" aria-hidden />
-          {hearts}
-        </span>
-        <LanguageToggle />
-      </div>
-
-      {/* Question */}
-      <main className="mx-auto w-full max-w-3xl flex-1 px-5 pt-10 pb-48 sm:px-8">
-        {/* No exit animation: a lingering old question would take clicks meant for the new one. */}
-        <motion.div
-          key={index}
-          initial={reduce ? false : { opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.25 }}
-        >
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold tracking-[0.16em] text-sky-soft uppercase">
-              {era.name} · {KIND_LABEL[question.kind]}
-            </p>
-            <ListenButton target="lesson-question" />
-          </div>
-          <div id="lesson-question">
-            <h1 className="mt-3 font-serif text-2xl leading-snug font-bold text-ink sm:text-3xl">{question.prompt}</h1>
-            {question.kind === "choice" && question.context && (
-              <p className="mt-4 rounded-2xl border-l-4 border-gold bg-gold/[0.07] px-5 py-4 text-[15px] leading-relaxed text-ink/90">
-                {question.context}
-              </p>
-            )}
-          </div>
-          <div className="mt-7">
-            <QuestionView question={question} answer={answer} onAnswer={setAnswer} checked={phase === "checked"} />
-          </div>
-        </motion.div>
-      </main>
-
-      {/* Bottom bar: check / feedback */}
-      <div
-        className={`fixed inset-x-0 bottom-0 z-30 border-t-2 transition-colors ${
-          phase === "checked"
-            ? lastCorrect
-              ? "border-emerald-400/40 bg-[#0f2a2a]"
-              : "border-rose-400/40 bg-[#2a1522]"
-            : "border-white/10 bg-navy-900/95 backdrop-blur"
-        }`}
-      >
-        <div className="mx-auto flex max-w-3xl flex-col gap-4 px-5 py-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <div aria-live="assertive" className="min-h-6 min-w-0">
-            {phase === "checked" && (
-              <motion.div
-                initial={reduce ? false : { y: 12, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                className="flex items-start gap-3"
-               
-              >
-                {lastCorrect ? (
-                  <CheckCircle2 className="size-9 shrink-0 text-emerald-300" aria-hidden />
-                ) : (
-                  <XCircle className="size-9 shrink-0 text-rose-300" aria-hidden />
-                )}
-                <div className="min-w-0">
-                  <p className={`text-lg font-bold ${lastCorrect ? "text-emerald-200" : "text-rose-200"}`}>
-                    {lastCorrect
-                      ? combo > 0 && combo % COMBO_EVERY === 0
-                        ? `Гайхалтай! ${combo} дараалан зөв 🔥`
-                        : ["Зөв!", "Сайн байна!", "Яг тийм!", "Мундаг!"][solved % 4]
-                      : "Буруу байна"}
-                    {lastGain > 0 && <span className="ml-2 text-sm font-semibold text-gold-soft">+{lastGain} XP</span>}
-                  </p>
-                  {!lastCorrect && correctText && (
-                    <p className="mt-0.5 text-sm text-rose-100">
-                      Зөв хариулт: <strong>{correctText}</strong>
-                    </p>
-                  )}
-                  {explain && <p className="mt-1 line-clamp-3 text-sm text-ink/80">{explain}</p>}
-                  {!lastCorrect && hearts > 0 && (
-                    <p className="mt-1 text-xs text-faint">Энэ асуулт сүүлд дахин гарна.</p>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={phase === "answering" ? check : next}
-            disabled={phase === "answering" && !isAnswered(question, answer)}
-            className={`shrink-0 rounded-2xl px-10 py-3.5 text-base font-extrabold tracking-wide uppercase transition active:translate-y-1 active:shadow-none disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-faint disabled:shadow-none ${
-              phase === "checked" && !lastCorrect
-                ? "bg-rose-400 text-navy-950 shadow-[0_4px_0_#9f3550] hover:bg-rose-300"
-                : phase === "checked"
-                  ? "bg-emerald-400 text-navy-950 shadow-[0_4px_0_#1d7a55] hover:bg-emerald-300"
-                  : "bg-gold text-navy-950 shadow-[0_4px_0_#a87a23] hover:bg-gold-soft"
-            }`}
-          >
-            {phase === "answering" ? "Шалгах" : "Үргэлжлүүлэх"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  if (phase === "quiz" || !result) {
+    return (
+      <QuizSession
+        questions={questions}
+        mode="lesson"
+        heading={era.name}
+        xpPerCorrect={XP_PER_CORRECT}
+        onAnswered={onAnswered}
+        onFinish={onFinish}
+      />
+    );
+  }
+  if (phase === "fix") {
+    return (
+      <ReviewSession
+        questions={result.missed.map((m) => m.question)}
+        exitHref="/learn"
+        exitLabel="Дүн рүү буцах"
+        onExit={() => setPhase("results")}
+      />
+    );
+  }
+  return <Results lesson={lesson} eraName={era.name} result={result} onRetry={onRetry} onFix={() => setPhase("fix")} />;
 }
 
 function Results({
-  lessonTitle,
+  lesson,
   eraName,
-  success,
   result,
   onRetry,
+  onFix,
 }: {
-  lessonTitle: string;
+  lesson: Lesson;
   eraName: string;
-  success: boolean;
   result: Result;
-  onRetry: () => void;
+  onRetry: (study: boolean) => void;
+  onFix: () => void;
 }) {
   const { progress } = useProgress();
+  const { notebook } = useMistakes();
   const reduce = useReducedMotion();
   const info = levelInfo(progress.xp);
   const minutes = Math.floor(result.seconds / 60);
   const secs = String(result.seconds % 60).padStart(2, "0");
+  const { success } = result;
+  const next = LESSONS[LESSONS.indexOf(lesson) + 1];
+  const nextEra = next && ERAS.find((e) => e.id === next.eraId);
+  // Mistakes from this run that haven't been fixed since.
+  const open = result.missed.filter((m) => notebook.open.some((o) => o.question.id === m.question.id));
 
   return (
-    <main className="relative mx-auto flex min-h-dvh max-w-xl flex-col items-center justify-center px-5 py-16 text-center">
+    <main className="relative mx-auto flex min-h-dvh max-w-2xl flex-col items-center px-5 pt-24 pb-16 text-center">
+      <LearnBackdrop />
       <ScreenBar />
       {success && <Confetti />}
       <motion.div
@@ -351,15 +125,11 @@ function Results({
         {success ? <Trophy className="size-14 text-gold" aria-hidden /> : <Heart className="size-14 text-rose-300" aria-hidden />}
       </motion.div>
 
-      <div>
-        <h1 className="mt-6 font-serif text-4xl font-bold text-ink">
-          {success ? "Хичээл дууслаа!" : "Амь дууслаа"}
-        </h1>
-        <p className="mt-2 text-muted">
-          {eraName} · {lessonTitle}
-          {!success && " — дахин оролдоод заавал давна!"}
-        </p>
-      </div>
+      <h1 className="mt-6 font-serif text-4xl font-bold text-ink">{success ? "Хичээл дууслаа!" : "Амь дууслаа"}</h1>
+      <p className="mt-2 text-muted">
+        {eraName} · {lesson.title}
+        {!success && " — алдаагаа хараад дахин оролдоорой, заавал давна!"}
+      </p>
 
       {success && (
         <div className="mt-5 flex gap-2" aria-label={`${result.stars} од`}>
@@ -370,10 +140,7 @@ function Results({
               animate={{ scale: 1, rotate: 0 }}
               transition={{ delay: 0.3 + s * 0.18, type: "spring", stiffness: 300, damping: 12 }}
             >
-              <Star
-                className={`size-12 ${s <= result.stars ? "fill-gold text-gold" : "text-white/20"}`}
-                aria-hidden
-              />
+              <Star className={`size-12 ${s <= result.stars ? "fill-gold text-gold" : "text-white/20"}`} aria-hidden />
             </motion.span>
           ))}
         </div>
@@ -381,7 +148,7 @@ function Results({
 
       <dl className="mt-8 grid w-full grid-cols-3 gap-3">
         {[
-          { icon: Zap, label: "XP", value: `+${result.xp}`, tone: "border-gold/40 text-gold-soft" },
+          { icon: Zap, label: "XP", value: `+${result.gained}`, tone: "border-gold/40 text-gold-soft" },
           { icon: Target, label: "Оновчлол", value: `${result.accuracy}%`, tone: "border-emerald-400/40 text-emerald-200" },
           { icon: Flame, label: "Шилдэг цуваа", value: `${result.maxCombo}x`, tone: "border-orange-400/40 text-orange-200" },
         ].map(({ icon: Icon, label, value, tone }, i) => (
@@ -410,15 +177,12 @@ function Results({
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.9 }}
           className="mt-6 rounded-2xl bg-gradient-to-r from-gold/25 to-orange-400/20 px-6 py-3 font-bold text-gold-soft"
-         
         >
           🎉 Түвшин ахилаа! Та одоо {info.level}-р түвшин — «{info.title}»
         </motion.p>
       )}
       {result.award.goalReached && (
-        <p className="mt-3 rounded-2xl bg-emerald-400/10 px-6 py-3 font-semibold text-emerald-200">
-          🎯 Өдрийн зорилгодоо хүрлээ!
-        </p>
+        <p className="mt-3 rounded-2xl bg-emerald-400/10 px-6 py-3 font-semibold text-emerald-200">🎯 Өдрийн зорилгодоо хүрлээ!</p>
       )}
       {success && result.award.streak > 0 && (
         <p className="mt-3 flex items-center gap-1.5 text-sm text-orange-200">
@@ -427,22 +191,63 @@ function Results({
         </p>
       )}
 
+      {/* What went wrong, and a way to put it right straight away */}
+      {result.missed.length > 0 && (
+        <section aria-labelledby="mistakes-title" className="mt-10 w-full rounded-3xl border border-rose-400/25 bg-rose-400/[0.04] p-4 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-left">
+            <div>
+              <h2 id="mistakes-title" className="flex items-center gap-2 font-serif text-xl font-bold text-ink">
+                <NotebookPen className="size-5 text-rose-200" aria-hidden />
+                Алдаагаа харъя
+              </h2>
+              <p className="mt-0.5 text-sm text-muted">
+                {open.length > 0
+                  ? `${result.missed.length} асуултад алдсан — зөв хариулт, тайлбарыг нь уншаад засаарай.`
+                  : "Энэ хичээлийн бүх алдаагаа зассан байна. 👏"}
+              </p>
+            </div>
+            {open.length > 0 && (
+              <button type="button" onClick={onFix} className="btn-3d btn-3d-rose px-5 py-2.5 text-sm">
+                Алдаагаа засах
+                <ArrowRight className="size-4" aria-hidden />
+              </button>
+            )}
+          </div>
+          <div className="mt-4">
+            <MistakeList items={result.missed} />
+          </div>
+        </section>
+      )}
+
       <div className="mt-10 flex w-full flex-col gap-3 sm:flex-row">
-        <button
-          type="button"
-          onClick={onRetry}
-          className="flex flex-1 items-center justify-center gap-2 rounded-2xl border-2 border-white/15 px-6 py-3.5 font-bold text-ink transition hover:border-white/30 hover:bg-white/5"
-        >
+        <button type="button" onClick={() => onRetry(false)} className="btn-ghost flex-1">
           <RotateCcw className="size-4" aria-hidden />
           Дахин тоглох
         </button>
-        <Link
-          href="/learn"
-          className="flex flex-1 items-center justify-center rounded-2xl bg-gold px-6 py-3.5 font-extrabold tracking-wide text-navy-950 uppercase shadow-[0_4px_0_#a87a23] transition hover:bg-gold-soft active:translate-y-1 active:shadow-none"
-        >
-          Үргэлжлүүлэх
-        </Link>
+        {success && next ? (
+          <Link href={`/learn/${next.id}`} className="btn-3d flex-1">
+            Дараагийн хичээл
+            <ArrowRight className="size-5" aria-hidden />
+          </Link>
+        ) : success ? (
+          <Link href="/learn" className="btn-3d flex-1">
+            Үргэлжлүүлэх
+          </Link>
+        ) : (
+          <button type="button" onClick={() => onRetry(true)} className="btn-3d flex-1">
+            <BookOpen className="size-5" aria-hidden />
+            Дахин уншаад оролдох
+          </button>
+        )}
       </div>
+      {success && next && (
+        <p className="mt-3 text-xs text-faint">
+          Дараа нь: {nextEra?.name} · {next.title}
+        </p>
+      )}
+      <Link href="/learn" className="mt-5 text-sm text-muted underline-offset-4 hover:text-ink hover:underline">
+        Хичээлийн зам руу буцах
+      </Link>
     </main>
   );
 }
@@ -451,7 +256,8 @@ function Results({
 export function LessonPlayer({ lessonId }: { lessonId: string }) {
   const { progress, ready } = useProgress();
   const { user, loading, configured, openDialog } = useAuth();
-  const [attempt, setAttempt] = useState(0);
+  const [run, setRun] = useState({ attempt: 0, skipStudy: false });
+  const lesson = findLesson(lessonId)!;
   const prev = previousLesson(lessonId);
   const locked = ready && prev !== undefined && !progress.completed[prev.id];
 
@@ -468,23 +274,16 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
   if (configured && !user) {
     return (
       <main className="relative mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-5 text-center">
+        <LearnBackdrop />
         <ScreenBar />
         <Lock className="size-14 text-faint" aria-hidden />
         <h1 className="mt-4 font-serif text-3xl font-bold text-ink">Нэвтэрч суралцаарай</h1>
         <p className="mt-2 text-muted">Хичээл үзэхийн тулд нэвтэрнэ үү эсвэл бүртгүүлнэ үү.</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <button
-            type="button"
-            onClick={() => openDialog("login")}
-            className="rounded-2xl bg-gold px-8 py-3 font-bold text-navy-950 shadow-[0_4px_0_#a87a23] hover:bg-gold-soft"
-          >
+          <button type="button" onClick={() => openDialog("login")} className="btn-3d">
             Нэвтрэх
           </button>
-          <button
-            type="button"
-            onClick={() => openDialog("signup")}
-            className="rounded-2xl border border-white/15 px-8 py-3 font-bold text-ink hover:bg-white/5"
-          >
+          <button type="button" onClick={() => openDialog("signup")} className="btn-ghost">
             Бүртгүүлэх
           </button>
         </div>
@@ -498,19 +297,25 @@ export function LessonPlayer({ lessonId }: { lessonId: string }) {
   if (locked) {
     return (
       <main className="relative mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-5 text-center">
+        <LearnBackdrop />
         <ScreenBar />
         <Lock className="size-14 text-faint" aria-hidden />
         <h1 className="mt-4 font-serif text-3xl font-bold text-ink">Энэ хичээл түгжээтэй</h1>
         <p className="mt-2 text-muted">Өмнөх «{prev.title}» хичээлээ дуусгаад нээгээрэй.</p>
-        <Link
-          href="/learn"
-          className="mt-8 rounded-2xl bg-gold px-8 py-3 font-bold text-navy-950 shadow-[0_4px_0_#a87a23] hover:bg-gold-soft"
-        >
+        <Link href="/learn" className="btn-3d mt-8">
           Замаа харах
         </Link>
       </main>
     );
   }
 
-  return <Attempt key={attempt} lessonId={lessonId} attempt={attempt} onRetry={() => setAttempt((a) => a + 1)} />;
+  return (
+    <Attempt
+      key={run.attempt}
+      lesson={lesson}
+      attempt={run.attempt}
+      skipStudy={run.skipStudy}
+      onRetry={(study) => setRun((r) => ({ attempt: r.attempt + 1, skipStudy: !study }))}
+    />
+  );
 }

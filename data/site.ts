@@ -6,11 +6,14 @@ export const SITE_YEAR = 2026;
 
 export const NAV_LINKS = [
   { href: "/map", label: "Түүхэн газрын зураг" },
+  { href: "#map", label: "Аймгууд" },
   { href: "#eras", label: "Эрин үеүд" },
   { href: "#team", label: "Бид хэн бэ?" },
 ] as const;
 
 export const HERO = {
+  eyebrow: "Интерактив түүхэн атлас",
+  tagline: "Цагийг чир. Эзэнт гүрэн мандаж, хил хязгаар өөрчлөгдөхийг хар.",
   subtitle:
     "Одоо үеийн залууст зориулсан Монголын интерактив түүхэн газрын зургийн веб платформ",
   primaryCta: { label: "Түүхэн газрын зураг нээх", href: "/map" },
@@ -19,12 +22,38 @@ export const HERO = {
   scriptWord: "ᠮᠣᠩᠭᠣᠯ",
 };
 
+/** Copy for the 3D globe in the hero. */
+export const GLOBE = {
+  aria: "Монголын түүхэн хил хязгаарыг харуулсан 3D бөмбөрцөг",
+  dragHint: "Бөмбөрцгийг чирж эргүүл",
+  areaLabel: "Нутаг дэвсгэр",
+  areaUnit: "сая км²",
+  ratioPrefix: "Өнөөгийн Монголоос",
+  todayLegend: "Өнөөгийн Монгол",
+  play: "2200 жилийг тоглуулах",
+  pause: "Зогсоох",
+};
+
+export const HERO_STATS = [
+  { value: 2200, suffix: "+", label: "жилийн түүх" },
+  { value: 9, suffix: "", label: "эрин үе" },
+  { value: 21, suffix: "", label: "аймаг" },
+] as const;
+
+export const AIMAG_SECTION = {
+  eyebrow: "Аймгаар аялах",
+  title: "Нутаг бүр өөрийн түүхтэй",
+  intro:
+    "Цаг хугацааны шугамыг чирэхэд тухайн үеийн улсын хил өнөөгийн аймгуудын доор зурагдана. Аймаг дээр дарж тэр үед юу болж байсныг уншаарай.",
+};
+
 export const MAP_PANEL = {
   title: "Монгол Улс",
   meta: "21 аймаг · нийслэл Улаанбаатар",
   hint: "Аймаг дээр дарж эсвэл Tab товчоор сонгоно уу",
   legend: {
     era: "Тухайн үеийн голомт",
+    realm: "Тухайн үеийн Монгол төр",
     site: "Түүхэн газар",
     selected: "Сонгосон аймаг",
   },
@@ -140,6 +169,22 @@ export const STORY = {
   quizWrong: "Бараг л! Зөв хариулт нь:",
   quizRetry: "Дахин оролдох",
   deepDive: "Гүнзгийрүүлж судлах",
+};
+
+/** The immersive scene that opens from a story hotspot on /map. */
+export const SCENE = {
+  enter: "Тэр мөчид очих",
+  enterHint: "Амилсан дүр зураг",
+  badge: "Уран сайхны дүрслэл",
+  soundOn: "Дуу асаах",
+  soundOff: "Дуу хаах",
+  previous: "Өмнөх",
+  next: "Дараах",
+  replay: "Дахин үзэх",
+  nextScene: "Дараагийн дүр зураг",
+  backToMap: "Газрын зураг руу буцах",
+  endTitle: "Чи тэнд байлаа.",
+  hint: "Хулганаа хөдөлгөж эргэн тойрноо хар · дарж үргэлжлүүл",
 };
 
 /** "Then vs today" comparison on /map. */

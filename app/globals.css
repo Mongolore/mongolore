@@ -250,3 +250,191 @@ body::after {
 @media (prefers-reduced-motion: reduce) {
   [data-narrating="true"] { transition: none; }
 }
+
+/* ---- Landing page: night sky, glass, gold ---- */
+.starfield {
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, rgb(255 255 255 / 0.7), transparent 60%),
+    radial-gradient(1px 1px at 31% 62%, rgb(255 255 255 / 0.5), transparent 60%),
+    radial-gradient(1.5px 1.5px at 47% 9%, rgb(243 205 130 / 0.7), transparent 60%),
+    radial-gradient(1px 1px at 58% 78%, rgb(255 255 255 / 0.45), transparent 60%),
+    radial-gradient(1px 1px at 72% 26%, rgb(255 255 255 / 0.6), transparent 60%),
+    radial-gradient(1.5px 1.5px at 86% 55%, rgb(140 198 239 / 0.7), transparent 60%),
+    radial-gradient(1px 1px at 94% 12%, rgb(255 255 255 / 0.5), transparent 60%),
+    radial-gradient(1px 1px at 5% 84%, rgb(255 255 255 / 0.4), transparent 60%),
+    radial-gradient(1px 1px at 22% 41%, rgb(255 255 255 / 0.35), transparent 60%),
+    radial-gradient(1px 1px at 66% 47%, rgb(255 255 255 / 0.3), transparent 60%),
+    linear-gradient(180deg, #0a1128 0%, var(--color-navy-950) 45%, var(--color-navy-900) 100%);
+  background-size: 620px 520px, 540px 610px, 700px 480px, 480px 560px, 660px 500px, 580px 640px, 720px 560px, 500px 480px, 440px 520px, 600px 580px, 100% 100%;
+  animation: twinkle 7s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  from { opacity: 0.82; }
+  to { opacity: 1; }
+}
+
+.glass {
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background: linear-gradient(180deg, rgb(31 46 82 / 0.55), rgb(15 23 46 / 0.7));
+  backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 30px 70px -40px rgb(0 0 0 / 0.9);
+}
+
+.text-shine {
+  background: linear-gradient(100deg, #b7832a 0%, var(--color-gold) 25%, #fff0c9 50%, var(--color-gold) 75%, #b7832a 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shine 6s ease-in-out infinite;
+}
+
+@keyframes shine {
+  0%, 100% { background-position: 100% 0; }
+  50% { background-position: 0 0; }
+}
+
+.btn-gold {
+  background: linear-gradient(180deg, var(--color-gold-soft), var(--color-gold));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), inset 0 -2px 0 rgb(0 0 0 / 0.15), 0 12px 32px -10px rgb(232 176 75 / 0.7);
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+.btn-gold:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), inset 0 -2px 0 rgb(0 0 0 / 0.15), 0 18px 40px -10px rgb(232 176 75 / 0.85);
+}
+.btn-gold:active { transform: translateY(0); }
+
+/* The globe may run past its box when zoomed in; fade it out instead of cutting it. */
+.globe-canvas {
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at center, #000 86%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 50% at center, #000 86%, transparent 100%);
+}
+
+@keyframes era-rise {
+  from { opacity: 0; transform: translateY(10px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.era-rise { animation: era-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* Aimags turn to glass over an era's realm, so its colour shows through them. */
+[data-over-realm="true"] .region { fill: rgb(232 176 75 / 0.13); stroke: rgb(255 240 201 / 0.6); }
+[data-over-realm="true"] .region[data-era="true"] { fill: rgb(232 176 75 / 0.38); }
+[data-over-realm="true"] .region[data-active="true"] { fill: rgb(140 198 239 / 0.35); }
+[data-over-realm="true"] .region[aria-pressed="true"] { fill: var(--color-gold); }
+
+/* Era cards tilt towards the pointer side they are hovered from. */
+.tilt-row { perspective: 1400px; }
+.tilt-card {
+  transform-style: preserve-3d;
+  transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1), border-color 200ms ease, box-shadow 350ms ease;
+}
+.tilt-card:hover, .tilt-card:focus-visible {
+  transform: translateY(-8px) rotateX(7deg) rotateY(-5deg) scale(1.02);
+}
+.tilt-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgb(255 255 255 / 0.09) 48%, transparent 62%);
+  transform: translateX(-100%);
+  transition: transform 700ms ease;
+  pointer-events: none;
+}
+.tilt-card:hover::before { transform: translateX(100%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .starfield, .text-shine { animation: none; }
+  .era-rise { animation: none; }
+  .btn-gold, .tilt-card, .tilt-card::before { transition: none; }
+  .btn-gold:hover, .tilt-card:hover, .tilt-card:focus-visible { transform: none; }
+}
+
+/* ---- Immersive scenes on /map ---- */
+.scene-cta {
+  background: linear-gradient(100deg, var(--color-gold-soft), var(--color-gold) 60%, #d18f2e);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5), 0 10px 26px -10px rgb(232 176 75 / 0.8);
+  transition: transform 180ms ease, filter 180ms ease;
+}
+.scene-cta:hover { transform: translateY(-1px); filter: brightness(1.07); }
+
+@keyframes scene-enter { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scene-bar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes scene-title {
+  0% { opacity: 0; transform: scale(1.06); filter: blur(10px); letter-spacing: 0.06em; }
+  100% { opacity: 1; transform: none; filter: none; letter-spacing: normal; }
+}
+@keyframes scene-line {
+  from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes scene-progress { from { width: 0; } to { width: 100%; } }
+
+.scene-enter { animation: scene-enter 0.7s ease-out; }
+.scene-bar-top { transform-origin: top; animation: scene-bar 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards; }
+.scene-bar-bottom { transform-origin: bottom; animation: scene-bar 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards; }
+.scene-title { animation: scene-title 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.3s backwards; }
+.scene-line { animation: scene-line 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.scene-progress { animation: scene-progress linear forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-enter, .scene-bar-top, .scene-bar-bottom, .scene-title, .scene-line { animation: none; }
+  .scene-progress { animation: none; width: 100%; }
+  .scene-cta { transition: none; }
+  .scene-cta:hover { transform: none; }
+}
+
+/* ---- Learning: chunky game buttons ---- */
+.btn-3d {
+  --face: var(--color-gold);
+  --edge: #a87a23;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 1rem;
+  padding: 0.85rem 2.25rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-navy-950);
+  background: var(--face);
+  box-shadow: 0 4px 0 var(--edge);
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 150ms ease;
+}
+.btn-3d:hover { filter: brightness(1.08); }
+.btn-3d:active { transform: translateY(4px); box-shadow: none; }
+.btn-3d:focus-visible { outline: 2px solid var(--color-sky-accent); outline-offset: 3px; }
+.btn-3d:disabled {
+  cursor: not-allowed;
+  color: var(--color-faint);
+  background: rgb(255 255 255 / 0.1);
+  box-shadow: none;
+  filter: none;
+  transform: none;
+}
+.btn-3d-emerald { --face: #34d399; --edge: #1d7a55; }
+.btn-3d-rose { --face: #fb7185; --edge: #9f3550; }
+.btn-3d-sky { --face: var(--color-sky-accent); --edge: #2c6da0; }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 1rem;
+  border: 2px solid rgb(255 255 255 / 0.15);
+  padding: 0.8rem 1.5rem;
+  font-weight: 700;
+  color: var(--color-ink);
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+.btn-ghost:hover { border-color: rgb(255 255 255 / 0.35); background: rgb(255 255 255 / 0.05); }
+.btn-ghost:focus-visible { outline: 2px solid var(--color-sky-accent); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-3d { transition: none; }
+  .btn-3d:active { transform: none; box-shadow: 0 4px 0 var(--edge); }
+}

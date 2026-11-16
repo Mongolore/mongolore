@@ -4,6 +4,7 @@ import { Check, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Question } from "@/lib/lessons";
 import { sfx } from "@/lib/sounds";
+import { MiniMap, PIN_LETTERS } from "./MiniMap";
 
 /**
  * Renders one lesson question. Controlled: the player owns the answer and
@@ -14,6 +15,7 @@ import { sfx } from "@/lib/sounds";
  * - truefalse: boolean
  * - order: indices into the shuffled pool, in the order tapped
  * - match: number of wrong pairings so far, set once every pair is matched
+ * - locate: pin index
  */
 export type Answer = number | boolean | number[] | { misses: number } | null;
 
@@ -24,7 +26,7 @@ export function isAnswered(q: Question, a: Answer) {
 }
 
 /** Shuffled tiles for an order question, stable for the question. */
-export function orderPool(q: Extract<Question, { kind: "order" }>) {
+export function orderPool(q: { items: string[] }) {
   const idx = q.items.map((_, i) => i);
   // Deterministic but scrambled: reverse-interleave, never the solved order.
   const pool = idx.filter((i) => i % 2 === 1).reverse().concat(idx.filter((i) => i % 2 === 0));
@@ -43,6 +45,42 @@ export function grade(q: Question, a: Answer): boolean {
     }
     case "match":
       return typeof a === "object" && a !== null && "misses" in a && a.misses <= 1;
+    case "locate":
+      return a === q.answer;
+  }
+}
+
+/** The right answer as text, for feedback and the mistake notebook. */
+export function correctLabel(q: Question): string {
+  switch (q.kind) {
+    case "choice":
+      return q.options[q.answer];
+    case "truefalse":
+      return q.answer ? "Үнэн" : "Худал";
+    case "order":
+      return q.items.map((item, i) => `${i + 1}. ${item}`).join("\n");
+    case "match":
+      return q.pairs.map(([left, right]) => `${left} — ${right}`).join("\n");
+    case "locate":
+      return `${PIN_LETTERS[q.answer]} цэг — ${q.target}`;
+  }
+}
+
+/** What the learner answered, as text. */
+export function answerLabel(q: Question, a: Answer): string {
+  switch (q.kind) {
+    case "choice":
+      return typeof a === "number" ? q.options[a] : "";
+    case "truefalse":
+      return a === true ? "Үнэн" : a === false ? "Худал" : "";
+    case "order": {
+      const pool = orderPool(q);
+      return Array.isArray(a) ? a.map((p, i) => `${i + 1}. ${q.items[pool[p]]}`).join("\n") : "";
+    }
+    case "match":
+      return typeof a === "object" && a !== null && "misses" in a ? `${a.misses} удаа буруу холбосон` : "";
+    case "locate":
+      return typeof a === "number" ? `${PIN_LETTERS[a]} цэг — ${q.pins[a].name}` : "";
   }
 }
 
@@ -184,7 +222,7 @@ function Order({ question, answer, onAnswer, checked }: ViewProps & { question: 
 
 function Match({ question, onAnswer, checked }: ViewProps & { question: Extract<Question, { kind: "match" }> }) {
   // Right column is shown in a different order from the left.
-  const right = useMemo(() => orderPool({ kind: "order", prompt: "", items: question.pairs.map((p) => p[1]) }), [question]);
+  const right = useMemo(() => orderPool({ items: question.pairs.map((p) => p[1]) }), [question]);
   const [leftPick, setLeftPick] = useState<number | null>(null);
   const [rightPick, setRightPick] = useState<number | null>(null);
   const [matched, setMatched] = useState<number[]>([]);
@@ -264,6 +302,34 @@ function Match({ question, onAnswer, checked }: ViewProps & { question: Extract<
   );
 }
 
+function Locate({ question, answer, onAnswer, checked }: ViewProps & { question: Extract<Question, { kind: "locate" }> }) {
+  const selected = typeof answer === "number" ? answer : null;
+  const pick = (i: number) => {
+    sfx.tap();
+    onAnswer(i);
+  };
+  return (
+    <div>
+      <MiniMap pins={question.pins} pick={{ selected, onPick: pick, checked, answer: question.answer }} />
+      <ul className="mt-4 grid grid-cols-4 gap-2.5">
+        {question.pins.map((pin, i) => (
+          <li key={pin.name}>
+            <button
+              type="button"
+              disabled={checked}
+              onClick={() => pick(i)}
+              className={`${tile} flex flex-col items-center gap-0.5 px-2 py-2.5 text-center ${tileState(selected === i, checked, i === question.answer)}`}
+            >
+              <span className="font-mono text-base font-extrabold">{PIN_LETTERS[i]}</span>
+              {checked && <span className="text-[11px] leading-tight text-muted">{pin.name}</span>}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function QuestionView(props: ViewProps) {
   const { question } = props;
   switch (question.kind) {
@@ -275,6 +341,8 @@ export function QuestionView(props: ViewProps) {
       return <Order {...props} question={question} />;
     case "match":
       return <Match {...props} question={question} />;
+    case "locate":
+      return <Locate {...props} question={question} />;
   }
 }
 
@@ -283,4 +351,5 @@ export const KIND_LABEL: Record<Question["kind"], string> = {
   truefalse: "Үнэн үү, худал уу?",
   order: "Дарааллаар нь байрлуул",
   match: "Хос болгон холбо",
+  locate: "Газрын зураг дээр ол",
 };

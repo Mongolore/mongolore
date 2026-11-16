@@ -8,7 +8,7 @@ import { Logo } from "./Logo";
 /** Sticky header for inner pages (/map, /learn): logo home link, page links, account controls. */
 export function PageHeader({ children }: { children?: ReactNode }) {
   return (
-    <header className="sticky top-0 z-40 h-16 border-b border-white/10 bg-navy-900/90 backdrop-blur-lg">
+    <header className="sticky top-0 z-40 h-16 border-b border-white/10 bg-navy-900/80 backdrop-blur-xl backdrop-saturate-150">
       <nav aria-label="Үндсэн цэс" className="flex h-full items-center justify-between gap-3 px-4 sm:px-6">
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
         <Link
@@ -24,7 +24,7 @@ export function PageHeader({ children }: { children?: ReactNode }) {
           aria-label={`${SITE_NAME} — нүүр хуудас`}
           className="flex shrink-0 items-center rounded text-lg text-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-accent"
         >
-          <Logo />
+          <Logo compact />
         </Link>
         </div>
         <div className="flex min-w-0 items-center gap-1 sm:gap-2">

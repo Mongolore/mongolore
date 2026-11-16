@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { DailyQuestion } from "@/components/learn/DailyQuestion";
-import { LearnPath } from "@/components/learn/LearnPath";
+import { ContinueCard, LearnPath, NotebookCard } from "@/components/learn/LearnPath";
 import { StatsPanel } from "@/components/learn/StatsPanel";
 import { SITE_NAME } from "@/data/site";
 
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function LearnPage() {
   return (
-    <div>
+    <div className="relative isolate">
       <PageHeader>
         <Link
           href="/map"
@@ -26,6 +26,7 @@ export default function LearnPage() {
         </Link>
       </PageHeader>
 
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-16 -z-10 h-[34rem] bg-[radial-gradient(60%_100%_at_30%_0%,rgb(79_163_224/0.14),transparent)]" />
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-10 sm:px-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:py-14">
         <main className="min-w-0">
           <header className="max-w-2xl">
@@ -34,10 +35,15 @@ export default function LearnPage() {
               Түүхээ тоглоом шиг сур
             </h1>
             <p className="mt-3 text-lg text-muted">
-              Хүннүгээс өнөөг хүртэл — бүлэг бүр 3 богино хичээлтэй. Зөв хариулт бүр XP, алдаа бүр нэг амь. Өдөр бүр
-              суралцаж цуваагаа бүү тасал!
+              Хүннүгээс өнөөг хүртэл — бүлэг бүр 3 богино хичээлтэй. Эхлээд уншиж, газрын зураг, дүр зургаар танилц,
+              дараа нь шалга. Алдсан асуулт бүр дэвтэрт үлдэж, давтаад засна.
             </p>
           </header>
+
+          <div className="mt-8 space-y-4">
+            <ContinueCard />
+            <NotebookCard />
+          </div>
 
           <div className="mt-8 lg:hidden">
             <StatsPanel compact />
@@ -47,7 +53,8 @@ export default function LearnPage() {
             <DailyQuestion />
           </div>
 
-          <div className="mt-14">
+          <h2 className="mt-14 text-[11px] font-semibold tracking-[0.18em] text-faint uppercase">Бүх бүлэг</h2>
+          <div className="mt-4">
             <LearnPath />
           </div>
         </main>

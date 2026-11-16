@@ -18,12 +18,12 @@ export function EraStrip() {
         </Reveal>
       </div>
 
-      <ol className="mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pb-4 sm:scroll-px-8 sm:px-8 xl:mx-auto xl:max-w-7xl">
+      <ol className="tilt-row mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-5 px-5 pt-3 pb-8 sm:scroll-px-8 sm:px-8 xl:mx-auto xl:max-w-7xl">
         {ERAS.map((era, i) => (
           <li key={era.id} className="w-72 shrink-0 snap-start">
             <Link
               href={`/map?era=${era.id}`}
-              className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-navy-800/80 to-navy-950/60 p-5 transition hover:-translate-y-1 hover:border-gold/50 hover:shadow-[0_20px_40px_-20px_rgb(232_176_75/0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-accent"
+              className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-navy-800/80 to-navy-950/60 p-5 tilt-card hover:border-gold/50 hover:shadow-[0_20px_40px_-20px_rgb(232_176_75/0.45)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-accent"
             >
               <span
                 aria-hidden
@@ -31,6 +31,7 @@ export function EraStrip() {
               >
                 {String(i + 1).padStart(2, "0")}
               </span>
+              <span aria-hidden className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
               <span className="font-mono text-xs tracking-wide text-gold">{era.period}</span>
               <span className="mt-2 font-serif text-xl leading-snug font-semibold text-ink">{era.name}</span>
               <span className="mt-1 font-serif text-sm text-gold-soft italic">{ERA_STORIES[era.id]?.hook.title}</span>

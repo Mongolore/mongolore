@@ -1,8 +1,10 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/sections/Footer";
+import { AimagExplorer } from "@/components/sections/AimagExplorer";
 import { Hero } from "@/components/sections/Hero";
 import { LearnPromo } from "@/components/sections/LearnPromo";
 import { EraStrip } from "@/components/sections/EraStrip";
+import { EraProvider } from "@/lib/era";
 import { WhoWeAre } from "@/components/sections/WhoWeAre";
 
 const Page = () => {
@@ -16,7 +18,10 @@ const Page = () => {
       </a>
       <Navbar />
       <main>
-        <Hero />
+        <EraProvider>
+          <Hero />
+          <AimagExplorer />
+        </EraProvider>
         <EraStrip />
         <LearnPromo />
         <WhoWeAre />

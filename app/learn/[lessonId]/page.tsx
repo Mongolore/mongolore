@@ -19,5 +19,5 @@ export async function generateMetadata({ params }: PageProps<"/learn/[lessonId]"
 export default async function LessonPage({ params }: PageProps<"/learn/[lessonId]">) {
   const { lessonId } = await params;
   if (!findLesson(lessonId)) notFound();
-  return <LessonPlayer lessonId={lessonId} />;
+  return <LessonPlayer key={lessonId} lessonId={lessonId} />;
 }

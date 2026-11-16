@@ -1,6 +1,7 @@
 import { SITE_NAME_PARTS } from "@/data/site";
 
-export function Logo({ className = "" }: { className?: string }) {
+/** `compact` drops the wordmark on phones, where page headers are short of room. */
+export function Logo({ className = "", compact = false }: { className?: string; compact?: boolean }) {
   const [first, second] = SITE_NAME_PARTS;
   return (
     <span data-no-translate className={`inline-flex items-center gap-2.5 ${className}`}>
@@ -16,7 +17,7 @@ export function Logo({ className = "" }: { className?: string }) {
         <path d="M3 24h22" stroke="#8CC6EF" strokeOpacity=".4" strokeWidth="1.2" />
         <circle cx="19" cy="6" r="2.4" fill="#E8B04B" />
       </svg>
-      <span className="font-serif text-[1.15em] font-bold tracking-tight">
+      <span className={`font-serif text-[1.15em] font-bold tracking-tight ${compact ? "max-sm:hidden" : ""}`}>
         {first}
         <span className="text-gold">{second}</span>
       </span>
